@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Xencard Keeper",
+    "slug": "xencard-keeper",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "xencard",
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0B0F17",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "package": "com.creatixa.xencardkeeper",
+      "predictiveBackGestureEnabled": false
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.creatixa.xencardkeeper",
+      "backgroundColor": "#0B0F17"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-ocr-kit",
+        {
+          "cameraPermission": "Allow Xencard Keeper to capture images for business card scanning"
+        }
+      ],
+      "expo-font"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b7338734-f7f8-469a-93b1-d507e122e0b6"
+      }
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Exec(npx)",
+      "Exec(mv)",
+      "Exec(npm install)",
+      "Exec(mkdir)",
+      "Exec(rm)",
+      "Exec(npm run)",
+      "Exec(git remote)",
+      "Exec(git add)",
+      "Exec(git commit)",
+      "Exec(npm uninstall)",
+      "Exec(npm start)",
+      "Exec(npm list)",
+      "Exec(timeout)",
+      "Exec(./gradlew)",
+      "Exec(ls)",
+      "Exec(cat)",
+      "Exec(file)",
+      "Exec(git push)",
+      "Exec(find)",
+      "Exec(cp)",
+      "Exec(git checkout)",
+      "Exec(curl)",
+      "Exec(unzip)",
+      "Exec(awk)",
+      "Exec(grep)",
+      "Exec(java)",
+      "Exec(adb version)",
+      "Exec(node)",
+      "Exec(python3)",
+      "Exec(npm)",
+      "Exec(eas login)",
+      "Exec($ANDROID_HOME/build-tools/36.0.0/apksigner verify)",
+      "Exec(adb devices)",
+      "Exec(uname)",
+      "Exec(xcodebuild)",
+      "Exec(git reset)",
+      "Exec(git restore)"
+    ]
+  }
+}

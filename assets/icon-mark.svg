@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="100%" height="100%" style="background: #0B0F17;">
+  <defs>
+    <linearGradient id="cyanBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F2FE" />
+      <stop offset="100%" stop-color="#4FACFE" />
+    </linearGradient>
+    <linearGradient id="darkShield" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Centered Logo Mark -->
+  <g transform="translate(212, 212)">
+    <!-- Outer Shield / Vault Base -->
+    <path d="M 300,60 L 500,160 V 400 C 500,520 300,620 300,620 C 300,620 100,520 100,400 V 160 Z" 
+          fill="url(#darkShield)" stroke="#1E293B" stroke-width="6" />
+
+    <!-- Back Layer Card -->
+    <rect x="168" y="220" width="240" height="160" rx="24" 
+          fill="#1E293B" stroke="#00F2FE" stroke-width="3" stroke-opacity="0.5" 
+          transform="rotate(-12 288 300)" />
+
+    <!-- Front Glow Card (Intersecting X Pattern) -->
+    <rect x="192" y="220" width="240" height="160" rx="24" 
+          fill="url(#cyanBlue)" filter="url(#glow)" opacity="0.9"
+          transform="rotate(8 312 300)" />
+
+    <!-- Minimalist 'X' Cutout Accent -->
+    <path d="M 252,260 L 336,340 M 336,260 L 252,340" 
+          stroke="#0B0F17" stroke-width="9" stroke-linecap="round" 
+          transform="rotate(8 312 300)" />
+  </g>
+</svg>
