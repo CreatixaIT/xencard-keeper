@@ -1,12 +1,10 @@
-import { BusinessCardData, FieldExtraction } from './ocrEngine';
+import type { BusinessCardData, FieldExtraction } from './ocrEngine';
 
 /**
  * Business Card Merger
  * 
- * Phase 8: Front/back merge with confidence-aware logic
- * 
  * Merges front and back OCR results, preserving stronger candidates
- * and combining complementary information.
+ * and combining complementary information (such as secondary phones and addresses).
  */
 export class BusinessCardMerger {
   /**
@@ -15,17 +13,42 @@ export class BusinessCardMerger {
   merge(front: BusinessCardData, back: BusinessCardData): BusinessCardData {
     const merged: BusinessCardData = {};
 
-    // Merge each field with confidence-aware logic
     merged.fullName = this.mergeField(front.fullName, back.fullName);
     merged.designation = this.mergeField(front.designation, back.designation);
     merged.company = this.mergeField(front.company, back.company);
     merged.industry = this.mergeField(front.industry, back.industry);
-    merged.phone = this.mergeField(front.phone, back.phone);
-    merged.alternatePhone = this.mergeAlternatePhone(front.alternatePhone, back.alternatePhone);
+
+    // Smart phone merging
+    const phoneCandidates: FieldExtraction[] = [];
+    if (front.phone) phoneCandidates.push(front.phone);
+    if (front.alternatePhone) phoneCandidates.push(front.alternatePhone);
+    if (back.phone) phoneCandidates.push(back.phone);
+    if (back.alternatePhone) phoneCandidates.push(back.alternatePhone);
+
+    const uniquePhones = this.removeDuplicatePhones(phoneCandidates);
+    if (uniquePhones.length > 0) {
+      merged.phone = uniquePhones[0];
+    }
+    if (uniquePhones.length > 1) {
+      merged.alternatePhone = uniquePhones[1];
+    }
+
     merged.whatsappNumber = this.mergeField(front.whatsappNumber, back.whatsappNumber);
     merged.email = this.mergeField(front.email, back.email);
     merged.website = this.mergeField(front.website, back.website);
+
+    // Address merging
     merged.address = this.mergeField(front.address, back.address);
+    if (front.address && back.address && this.normalizeAddress(front.address.value) !== this.normalizeAddress(back.address.value)) {
+      merged.additionalAddresses = [
+        {
+          label: 'Back Address',
+          address: back.address.value,
+          confidence: back.address.confidence,
+        },
+      ];
+    }
+
     merged.city = this.mergeField(front.city, back.city);
     merged.country = this.mergeField(front.country, back.country);
 
@@ -42,66 +65,38 @@ export class BusinessCardMerger {
     if (!frontField && !backField) {
       return undefined;
     }
-
     if (!frontField) {
       return backField;
     }
-
     if (!backField) {
       return frontField;
     }
-
     // Both exist - choose based on confidence
-    if (frontField.confidence >= backField.confidence) {
-      return frontField;
-    }
-
-    return backField;
+    return (frontField.confidence >= backField.confidence) ? frontField : backField;
   }
 
   /**
-   * Merge alternate phone fields, avoiding duplicates
+   * Remove duplicate phone numbers
    */
-  private mergeAlternatePhone(
-    frontAlt: FieldExtraction | undefined,
-    backAlt: FieldExtraction | undefined
-  ): FieldExtraction | undefined {
-    const candidates: FieldExtraction[] = [];
-
-    if (frontAlt) candidates.push(frontAlt);
-    if (backAlt) candidates.push(backAlt);
-
-    // Remove duplicates
-    const uniqueCandidates = this.removeDuplicates(candidates);
-
-    if (uniqueCandidates.length === 0) {
-      return undefined;
-    }
-
-    if (uniqueCandidates.length === 1) {
-      return uniqueCandidates[0];
-    }
-
-    // Return the highest confidence candidate
-    return uniqueCandidates.sort((a, b) => b.confidence - a.confidence)[0];
-  }
-
-  /**
-   * Remove duplicate field values
-   */
-  private removeDuplicates(fields: FieldExtraction[]): FieldExtraction[] {
+  private removeDuplicatePhones(fields: FieldExtraction[]): FieldExtraction[] {
     const seen = new Set<string>();
     const unique: FieldExtraction[] = [];
 
     for (const field of fields) {
-      const normalized = field.value.replace(/[\s-()]/g, '');
-      if (!seen.has(normalized)) {
-        seen.add(normalized);
+      const normalized = field.value.replace(/\D/g, '');
+      // Match on last 8 digits to catch local vs international representations
+      const key = normalized.length >= 8 ? normalized.slice(-8) : normalized;
+      if (key && !seen.has(key)) {
+        seen.add(key);
         unique.push(field);
       }
     }
 
-    return unique;
+    return unique.sort((a, b) => b.confidence - a.confidence);
+  }
+
+  private normalizeAddress(addr: string): string {
+    return addr.toLowerCase().replace(/[^a-z0-9]/g, '');
   }
 }
 

@@ -70,7 +70,7 @@ export default function ScanScreen() {
           setScanStep('back');
         } else {
           setBackImage(captureResult.displayUri);
-          await processImages();
+          await processImages(frontImage, captureResult.displayUri);
         }
       } catch (error) {
         console.error('Capture error:', error);
@@ -91,20 +91,22 @@ export default function ScanScreen() {
 
   const handleSkipBack = async () => {
     setBackImage(null);
-    await processImages();
+    await processImages(frontImage, null);
   };
 
-  const processImages = async () => {
-    if (!frontImage) return;
+  const processImages = async (frontUriOverride?: string | null, backUriOverride?: string | null) => {
+    const fUri = frontUriOverride !== undefined ? frontUriOverride : frontImage;
+    const bUri = backUriOverride !== undefined ? backUriOverride : backImage;
+    if (!fUri) return;
     
     setIsProcessing(true);
     try {
       // OCR the front image (or both if back exists)
       let result;
-      if (backImage) {
-        result = await ocrService.recognizeBusinessCardWithBack(frontImage, backImage);
+      if (bUri) {
+        result = await ocrService.recognizeBusinessCardWithBack(fUri, bUri);
       } else {
-        result = await ocrService.recognizeBusinessCard(frontImage);
+        result = await ocrService.recognizeBusinessCard(fUri);
       }
       
       if (result.success) {

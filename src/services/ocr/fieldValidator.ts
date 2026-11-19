@@ -1,9 +1,7 @@
-import { BusinessCardData, FieldExtraction } from './ocrEngine';
+import type { BusinessCardData, FieldExtraction } from './ocrEngine';
 
 /**
  * Field Validator and Confidence Scorer
- * 
- * Phase 7: Validation and confidence scoring
  * 
  * Validates extracted fields and assigns confidence scores based on multiple factors.
  */
@@ -22,6 +20,9 @@ export class FieldValidator {
     }
     if (data.company) {
       validated.company = this.validateCompany(data.company);
+    }
+    if (data.industry) {
+      validated.industry = this.validateIndustry(data.industry);
     }
     if (data.phone) {
       validated.phone = this.validatePhone(data.phone);
@@ -72,22 +73,22 @@ export class FieldValidator {
       confidence *= 0.2;
     }
 
-    // Penalty for organization terms
-    const orgTerms = ['Ltd', 'Inc', 'Corp', 'Company', 'Group', 'LLC', 'Bank', 'Institute'];
-    if (orgTerms.some(term => value.includes(term))) {
+    // Penalty for organization terms (with word boundaries)
+    const orgTerms = [/\bLtd\b/i, /\bInc\b/i, /\bCorp\b/i, /\bCompany\b/i, /\bGroup\b/i, /\bLLC\b/i, /\bBank\b/i, /\bInstitute\b/i];
+    if (orgTerms.some(term => term.test(value))) {
       confidence *= 0.3;
     }
 
     // Penalty for address terms
-    const addressTerms = ['Road', 'Street', 'Building', 'Floor', 'Tower'];
-    if (addressTerms.some(term => value.includes(term))) {
+    const addressTerms = [/\bRoad\b/i, /\bStreet\b/i, /\bBuilding\b/i, /\bFloor\b/i, /\bTower\b/i];
+    if (addressTerms.some(term => term.test(value))) {
       confidence *= 0.3;
     }
 
-    // Boost for reasonable word count
+    // Boost for reasonable word count (2 to 5 words)
     const wordCount = value.split(/\s+/).length;
-    if (wordCount >= 2 && wordCount <= 4) {
-      confidence *= 1.1;
+    if (wordCount >= 2 && wordCount <= 5) {
+      confidence *= 1.05;
     }
 
     return {
@@ -111,8 +112,8 @@ export class FieldValidator {
     }
 
     // Penalty if looks like address
-    const addressTerms = ['Road', 'Street', 'Building', 'Floor', 'Tower'];
-    if (addressTerms.some(term => value.includes(term))) {
+    const addressTerms = [/\bRoad\b/i, /\bStreet\b/i, /\bFloor\b/i, /\bBuilding\b/i];
+    if (addressTerms.some(term => term.test(value))) {
       confidence *= 0.3;
     }
 
@@ -137,8 +138,8 @@ export class FieldValidator {
     }
 
     // Penalty if looks like address
-    const addressTerms = ['Road', 'Street', 'Building', 'Floor'];
-    if (addressTerms.some(term => value.includes(term))) {
+    const addressTerms = [/\bRoad\b/i, /\bStreet\b/i, /\bFloor\b/i];
+    if (addressTerms.some(term => term.test(value))) {
       confidence *= 0.4;
     }
 
@@ -151,22 +152,34 @@ export class FieldValidator {
   }
 
   /**
+   * Validate industry field
+   */
+  private validateIndustry(field: FieldExtraction): FieldExtraction {
+    return {
+      value: field.value,
+      confidence: Math.min(field.confidence, 1.0),
+      source: field.source,
+      evidence: field.evidence,
+    };
+  }
+
+  /**
    * Validate phone field
    */
   private validatePhone(field: FieldExtraction): FieldExtraction {
     const value = field.value;
     let confidence = field.confidence;
 
-    // Boost for valid phone pattern
-    const phonePattern = /\+?\d{10,}/;
-    if (phonePattern.test(value)) {
-      confidence *= 1.1;
+    // Check actual digits count
+    const digitsOnly = value.replace(/\D/g, '');
+    if (digitsOnly.length >= 7 && digitsOnly.length <= 15) {
+      confidence *= 1.05;
     } else {
-      confidence *= 0.5;
+      confidence *= 0.4;
     }
 
-    // Penalty if looks like postal code
-    if (/^\d{4}$/.test(value) || /^\d{3,4}-\d{3,4}$/.test(value)) {
+    // Penalty if looks like postal code alone
+    if (/^\d{4}$/.test(value.trim()) || /^\d{3,4}-\d{3,4}$/.test(value.trim())) {
       confidence *= 0.3;
     }
 
@@ -188,7 +201,7 @@ export class FieldValidator {
     // Boost for valid email pattern
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (emailPattern.test(value)) {
-      confidence *= 1.1;
+      confidence *= 1.05;
     } else {
       confidence *= 0.3;
     }
@@ -209,9 +222,9 @@ export class FieldValidator {
     let confidence = field.confidence;
 
     // Boost for valid URL pattern
-    const urlPattern = /^https?:\/\/.+\..+/;
+    const urlPattern = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/i;
     if (urlPattern.test(value)) {
-      confidence *= 1.1;
+      confidence *= 1.05;
     } else {
       confidence *= 0.8;
     }
@@ -237,9 +250,9 @@ export class FieldValidator {
     let confidence = field.confidence;
 
     // Boost for address indicators
-    const addressIndicators = ['Road', 'Street', 'Building', 'Floor', 'Tower', 'Block', 'House'];
-    if (addressIndicators.some(ind => value.includes(ind))) {
-      confidence *= 1.1;
+    const addressIndicators = [/\bRoad\b/i, /\bStreet\b/i, /\bBuilding\b/i, /\bFloor\b/i, /\bTower\b/i, /\bBlock\b/i, /\bHouse\b/i];
+    if (addressIndicators.some(ind => ind.test(value))) {
+      confidence *= 1.05;
     }
 
     // Penalty if contains email/phone
@@ -262,7 +275,6 @@ export class FieldValidator {
     const value = field.value;
     let confidence = field.confidence;
 
-    // Penalty if contains numbers
     if (/\d/.test(value)) {
       confidence *= 0.5;
     }
@@ -281,12 +293,6 @@ export class FieldValidator {
   private validateCountry(field: FieldExtraction): FieldExtraction {
     const value = field.value;
     let confidence = field.confidence;
-
-    // Boost for known country names
-    const countries = ['Bangladesh', 'India', 'USA', 'United States', 'UK', 'United Kingdom'];
-    if (countries.some(c => value.toLowerCase().includes(c.toLowerCase()))) {
-      confidence *= 1.1;
-    }
 
     return {
       value,

@@ -14,10 +14,12 @@ export interface OcrBoundingBox {
   height: number;
 }
 
-export interface OcrPolygon {
+export interface OcrPoint {
   x: number;
   y: number;
-}[];
+}
+
+export type OcrPolygon = OcrPoint[];
 
 export interface OcrWord {
   text: string;

@@ -32,7 +32,7 @@ export default function ScanConfirmScreen() {
     address: getFieldValue(ocrData.address),
     city: getFieldValue(ocrData.city),
     country: getFieldValue(ocrData.country),
-    industry: getFieldValue(ocrData.industry),
+    industry: getFieldValue(ocrData.industry) || 'Other',
     notes: ocrData.notes || '',
   });
 
@@ -90,7 +90,7 @@ export default function ScanConfirmScreen() {
         website: formData.website,
         industry: mapToIndustry(formData.industry),
         notes: formData.notes,
-        rawOcrText: formData.rawText,
+        rawOcrText: ocrData.rawText || formData.rawText || '',
         cardImageUri: frontFileUri,
         backImageUri: backFileUri,
         thumbnailUri: thumbnailUri || frontFileUri,

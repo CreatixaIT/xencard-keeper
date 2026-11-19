@@ -1,4 +1,4 @@
-import { OcrDocument, OCRResult, BusinessCardData } from './ocrEngine';
+import type { OcrDocument, OCRResult, BusinessCardData } from './ocrEngine';
 import { CloudVisionOcrEngine } from './cloudVisionOcrEngine';
 import { MlKitOcrEngine } from './mlKitOcrEngine';
 import { LayoutReconstructor } from './layoutReconstructor';
@@ -51,9 +51,9 @@ class OCRService {
         const cloudVisionEngine = this.cloudVisionEngine;
         engineName = 'google-cloud-vision (attempting online)';
         console.warn('Attempting Cloud Vision OCR...');
-        
+
         document = await cloudVisionEngine.recognize(captureResult.ocrUri);
-        
+
         // If successful, use Cloud Vision
         if (document.overallConfidence > 0.3) {
           engineName = 'google-cloud-vision (online)';
@@ -148,14 +148,14 @@ class OCRService {
     try {
       // OCR front
       const frontResult = await this.recognizeBusinessCard(frontUri);
-      
+
       if (!frontResult.success) {
         return frontResult;
       }
 
       // OCR back
       const backResult = await this.recognizeBusinessCard(backUri);
-      
+
       if (!backResult.success) {
         // Return front result if back fails
         return frontResult;
@@ -163,7 +163,7 @@ class OCRService {
 
       // Merge results
       const mergedData = businessCardMerger.merge(frontResult.data, backResult.data);
-      
+
       const overallConfidence = this.calculateOverallConfidence(mergedData);
 
       return {

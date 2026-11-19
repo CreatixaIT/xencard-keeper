@@ -1,13 +1,11 @@
 import * as FileSystem from 'expo-file-system';
-import { OcrEngine, OcrDocument } from './ocrEngine';
+import type { OcrEngine, OcrDocument } from './ocrEngine';
 
 /**
  * Cloud Vision OCR Engine
  * 
- * Phase 3: Implement CloudVisionOcrEngine
- * 
  * Uses the backend endpoint to perform Google Cloud Vision OCR.
- * Falls back gracefully if the backend is unavailable.
+ * Falls back gracefully if the backend is unavailable or times out.
  */
 export class CloudVisionOcrEngine implements OcrEngine {
   private backendUrl: string;
@@ -17,11 +15,14 @@ export class CloudVisionOcrEngine implements OcrEngine {
   }
 
   async recognize(imageUri: string): Promise<OcrDocument> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+
     try {
       // Read image and convert to base64
       const base64 = await this.imageToBase64(imageUri);
-      
-      // Call backend endpoint
+
+      // Call backend endpoint with timeout
       const response = await fetch(this.backendUrl, {
         method: 'POST',
         headers: {
@@ -31,30 +32,39 @@ export class CloudVisionOcrEngine implements OcrEngine {
           imageBase64: base64,
           mimeType: 'image/jpeg',
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`OCR backend error: ${response.status}`);
       }
 
       const result = await response.json();
-      
+
       if (result.error) {
         throw new Error(result.error);
       }
 
+      if (!result.document) {
+        throw new Error('Invalid response from OCR backend');
+      }
+
       // Convert backend response to OcrDocument
       return {
-        width: result.document.width,
-        height: result.document.height,
+        width: result.document.width || 1000,
+        height: result.document.height || 1000,
         engine: 'google-cloud-vision',
-        blocks: result.document.blocks,
-        lines: result.document.lines,
-        words: result.document.words,
+        blocks: result.document.blocks || [],
+        lines: result.document.lines || [],
+        words: result.document.words || [],
+        rawText: result.document.rawText || '',
         overallConfidence: this.calculateOverallConfidence(result.document),
       };
     } catch (error) {
-      console.error('Cloud Vision OCR error:', error);
+      clearTimeout(timeoutId);
+      console.warn('Cloud Vision OCR error (falling back to offline ML Kit):', error);
       throw error;
     }
   }
@@ -83,12 +93,12 @@ export class CloudVisionOcrEngine implements OcrEngine {
    */
   private calculateOverallConfidence(document: any): number {
     const confidences = [
-      ...document.blocks.map((b: any) => b.confidence),
-      ...document.lines.map((l: any) => l.confidence),
-      ...document.words.map((w: any) => w.confidence),
-    ];
+      ...(document.blocks || []).map((b: any) => b.confidence),
+      ...(document.lines || []).map((l: any) => l.confidence),
+      ...(document.words || []).map((w: any) => w.confidence),
+    ].filter((c: any) => typeof c === 'number');
 
-    if (confidences.length === 0) return 0;
+    if (confidences.length === 0) return 0.85;
 
     const sum = confidences.reduce((a: number, b: number) => a + b, 0);
     return sum / confidences.length;

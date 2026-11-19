@@ -5,8 +5,8 @@
  * 
  * Request:
  * {
- *   imageBase64: string,
- *   mimeType: "image/jpeg"
+ *   imageBase64: string, // or image: string
+ *   mimeType?: "image/jpeg"
  * }
  * 
  * Response:
@@ -17,23 +17,16 @@
  *     height,
  *     blocks: [],
  *     lines: [],
- *     words: []
+ *     words: [],
+ *     rawText: string
  *   }
  * }
- * 
- * Security:
- * - Google credentials in server-side environment variables only
- * - Dedicated service account with only Vision permissions
- * - Images processed and discarded (not permanently stored)
- * - No logging of image base64 or full card contents in production
- * 
- * Required Environment Variables:
- * - GOOGLE_CLOUD_VISION_API_KEY: Google Cloud Vision API key
  */
 
 interface OCRRequest {
-  imageBase64: string;
-  mimeType: string;
+  imageBase64?: string;
+  image?: string;
+  mimeType?: string;
 }
 
 interface OCRResponse {
@@ -44,6 +37,7 @@ interface OCRResponse {
     blocks: any[];
     lines: any[];
     words: any[];
+    rawText?: string;
   };
   error?: string;
 }
@@ -51,11 +45,12 @@ interface OCRResponse {
 export async function POST(request: Request) {
   try {
     const body: OCRRequest = await request.json();
-    const { imageBase64, mimeType } = body;
+    const imageBase64 = body.imageBase64 || body.image;
+    const mimeType = body.mimeType || 'image/jpeg';
 
-    if (!imageBase64 || !mimeType) {
+    if (!imageBase64) {
       return Response.json(
-        { error: 'Missing imageBase64 or mimeType' },
+        { error: 'Missing imageBase64 or image' },
         { status: 400 }
       );
     }
@@ -70,7 +65,7 @@ export async function POST(request: Request) {
 
     // Get Google Cloud Vision credentials from environment
     const apiKey = process.env.GOOGLE_CLOUD_VISION_API_KEY;
-    
+
     if (!apiKey) {
       console.error('GOOGLE_CLOUD_VISION_API_KEY not configured');
       return Response.json(
@@ -109,21 +104,21 @@ export async function POST(request: Request) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Google Vision API error:', response.status, errorText);
-      
+
       if (response.status === 403) {
         return Response.json(
           { error: 'OCR service authentication failed - invalid credentials' },
           { status: 503 }
         );
       }
-      
+
       if (response.status === 429) {
         return Response.json(
           { error: 'OCR service rate limit exceeded' },
           { status: 429 }
         );
       }
-      
+
       return Response.json(
         { error: 'OCR service unavailable' },
         { status: 503 }
@@ -131,8 +126,7 @@ export async function POST(request: Request) {
     }
 
     const visionResponse = await response.json();
-    
-    // Check for Vision API errors
+
     if (visionResponse.error) {
       console.error('Google Vision API returned error:', visionResponse.error);
       return Response.json(
@@ -140,10 +134,9 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
-    
-    // Parse Vision response into our OcrDocument format
-    const fullTextAnnotation = visionResponse.responses[0]?.fullTextAnnotation;
-    
+
+    const fullTextAnnotation = visionResponse.responses?.[0]?.fullTextAnnotation;
+
     if (!fullTextAnnotation) {
       return Response.json(
         { error: 'No text detected in image' },
@@ -151,7 +144,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Convert Vision format to our OcrDocument format
     const document = parseVisionResponse(fullTextAnnotation);
 
     const ocrResponse: OCRResponse = {
@@ -175,7 +167,14 @@ export async function POST(request: Request) {
 function parseVisionResponse(fullTextAnnotation: any) {
   const pages = fullTextAnnotation.pages || [];
   if (pages.length === 0) {
-    return { width: 0, height: 0, blocks: [], lines: [], words: [] };
+    return {
+      width: 0,
+      height: 0,
+      blocks: [],
+      lines: [],
+      words: [],
+      rawText: fullTextAnnotation.text || '',
+    };
   }
 
   const page = pages[0];
@@ -186,61 +185,62 @@ function parseVisionResponse(fullTextAnnotation: any) {
   const lines: any[] = [];
   const words: any[] = [];
 
-  // Process blocks (pages[0].blocks)
   for (const block of page.blocks || []) {
-    const blockText = block.block?.text || '';
-    const blockConfidence = block.block?.confidence || 0;
-    
-    const blockBoundingBox = normalizeBoundingBox(block.block?.boundingBox?.vertices);
-    
+    const blockConfidence = block.confidence ?? 0.9;
+    const blockBoundingBox = normalizeBoundingBox(block.boundingBox?.vertices);
     const blockLines: any[] = [];
-    
-    // Process paragraphs within block
+
     for (const paragraph of block.paragraphs || []) {
-      for (const paragraphLine of paragraph.words || []) {
-        const lineText = paragraphLine.words
-          ?.map((w: any) => w.symbols?.map((s: any) => s.text).join('') || '')
-          .join(' ') || '';
-        
-        const lineConfidence = paragraphLine.confidence || 0;
-        const lineBoundingBox = normalizeBoundingBox(paragraphLine.boundingBox?.vertices);
-        
-        const lineWords: any[] = [];
-        
-        // Process words within line
-        for (const word of paragraphLine.words || []) {
-          const wordText = word.symbols?.map((s: any) => s.text).join('') || '';
-          const wordConfidence = word.confidence || 0;
-          const wordBoundingBox = normalizeBoundingBox(word.boundingBox?.vertices);
-          const wordPolygon = normalizePolygon(word.boundingBox?.vertices);
-          
-          lineWords.push({
-            text: wordText,
-            confidence: wordConfidence,
-            boundingBox: wordBoundingBox,
-            polygon: wordPolygon,
-          });
-          
-          words.push({
-            text: wordText,
-            confidence: wordConfidence,
-            boundingBox: wordBoundingBox,
-            polygon: wordPolygon,
-          });
-        }
-        
-        const line: any = {
-          text: lineText,
-          words: lineWords,
-          confidence: lineConfidence,
-          boundingBox: lineBoundingBox,
+      const paraConfidence = paragraph.confidence ?? blockConfidence;
+      let currentLineWords: any[] = [];
+
+      for (const word of paragraph.words || []) {
+        const wordConfidence = word.confidence ?? paraConfidence;
+        const wordBoundingBox = normalizeBoundingBox(word.boundingBox?.vertices);
+        const wordPolygon = normalizePolygon(word.boundingBox?.vertices);
+
+        // Assemble word text from symbols
+        const symbols = word.symbols || [];
+        const wordText = symbols.map((s: any) => s.text || '').join('');
+        if (!wordText) continue;
+
+        const wordObj = {
+          text: wordText,
+          confidence: wordConfidence,
+          boundingBox: wordBoundingBox,
+          polygon: wordPolygon,
         };
-        
-        lines.push(line);
-        blockLines.push(line);
+
+        currentLineWords.push(wordObj);
+        words.push(wordObj);
+
+        // Check if the last symbol indicates a line break
+        const lastSymbol = symbols[symbols.length - 1];
+        const breakType = lastSymbol?.property?.detectedBreak?.type;
+        const isLineBreak =
+          breakType === 'LINE_BREAK' ||
+          breakType === 'EOL_SURE_SPACE' ||
+          breakType === 'HYPHEN';
+
+        if (isLineBreak && currentLineWords.length > 0) {
+          const lineObj = createLineFromWords(currentLineWords);
+          lines.push(lineObj);
+          blockLines.push(lineObj);
+          currentLineWords = [];
+        }
+      }
+
+      // Finish any remaining words in the paragraph
+      if (currentLineWords.length > 0) {
+        const lineObj = createLineFromWords(currentLineWords);
+        lines.push(lineObj);
+        blockLines.push(lineObj);
+        currentLineWords = [];
       }
     }
-    
+
+    const blockText = blockLines.map(l => l.text).join('\n');
+
     blocks.push({
       text: blockText,
       confidence: blockConfidence,
@@ -255,12 +255,35 @@ function parseVisionResponse(fullTextAnnotation: any) {
     blocks,
     lines,
     words,
+    rawText: fullTextAnnotation.text || lines.map(l => l.text).join('\n'),
   };
 }
 
-/**
- * Normalize Vision vertices to our bounding box format
- */
+function createLineFromWords(lineWords: any[]) {
+  const lineText = lineWords.map(w => w.text).join(' ');
+  const lineConfidence = lineWords.reduce((sum, w) => sum + (w.confidence || 0.9), 0) / lineWords.length;
+
+  let minX = Infinity, minY = Infinity, maxX = 0, maxY = 0;
+  for (const w of lineWords) {
+    minX = Math.min(minX, w.boundingBox.x);
+    minY = Math.min(minY, w.boundingBox.y);
+    maxX = Math.max(maxX, w.boundingBox.x + w.boundingBox.width);
+    maxY = Math.max(maxY, w.boundingBox.y + w.boundingBox.height);
+  }
+
+  return {
+    text: lineText,
+    words: lineWords,
+    confidence: lineConfidence,
+    boundingBox: {
+      x: isFinite(minX) ? minX : 0,
+      y: isFinite(minY) ? minY : 0,
+      width: isFinite(maxX) && isFinite(minX) ? Math.max(maxX - minX, 0) : 0,
+      height: isFinite(maxY) && isFinite(minY) ? Math.max(maxY - minY, 0) : 0,
+    },
+  };
+}
+
 function normalizeBoundingBox(vertices: any[] | undefined) {
   if (!vertices || vertices.length < 4) {
     return { x: 0, y: 0, width: 0, height: 0 };
@@ -277,14 +300,11 @@ function normalizeBoundingBox(vertices: any[] | undefined) {
   return {
     x: minX,
     y: minY,
-    width: maxX - minX,
-    height: maxY - minY,
+    width: Math.max(maxX - minX, 0),
+    height: Math.max(maxY - minY, 0),
   };
 }
 
-/**
- * Normalize vertices to polygon format
- */
 function normalizePolygon(vertices: any[] | undefined) {
   if (!vertices || vertices.length < 4) {
     return [];

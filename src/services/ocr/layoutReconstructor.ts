@@ -1,9 +1,7 @@
-import { OcrDocument, OcrLine, OcrBlock, OcrWord, OcrBoundingBox } from './ocrEngine';
+import type { OcrDocument, OcrLine, OcrBlock, OcrWord, OcrBoundingBox } from './ocrEngine';
 
 /**
  * Layout Reconstructor
- * 
- * Phase 5: Implement layout reconstruction with geometry
  * 
  * Reconstructs lines from OCR words using geometric analysis.
  * Uses normalized coordinates and adaptive tolerances based on word height.
@@ -11,82 +9,124 @@ import { OcrDocument, OcrLine, OcrBlock, OcrWord, OcrBoundingBox } from './ocrEn
 export class LayoutReconstructor {
   /**
    * Reconstruct lines from words using geometric analysis
-   * 
-   * Algorithm:
-   * 1. Sort words by vertical center (primary) and horizontal position (secondary)
-   * 2. Group words into lines based on vertical overlap
-   * 3. Use adaptive tolerance based on median word height
-   * 4. Detect columns for multi-column layouts
    */
   static reconstructLines(document: OcrDocument): OcrLine[] {
-    if (document.words.length === 0) {
+    // If no words are provided, fallback to existing document lines
+    if (!document.words || document.words.length === 0) {
+      if (document.lines && document.lines.length > 0) {
+        return this.splitMultilineEntries(document.lines);
+      }
       return [];
     }
 
-    // Calculate median word height for adaptive tolerance
-    const wordHeights = document.words
-      .map(w => w.boundingBox.height)
-      .filter(h => h > 0);
-    
-    const medianWordHeight = this.calculateMedian(wordHeights);
-    const lineTolerance = medianWordHeight * 0.5; // 50% of median height
-
-    // Sort words by vertical center (primary) and horizontal position (secondary)
-    const sortedWords = [...document.words].sort((a, b) => {
-      const aCenterY = a.boundingBox.y + a.boundingBox.height / 2;
-      const bCenterY = b.boundingBox.y + b.boundingBox.height / 2;
-      
-      const yDiff = aCenterY - bCenterY;
-      
-      // If vertical centers are similar, sort by horizontal position
-      if (Math.abs(yDiff) < lineTolerance) {
-        return a.boundingBox.x - b.boundingBox.x;
+    // Filter valid words
+    const validWords = document.words.filter(w => w.text && w.text.trim().length > 0);
+    if (validWords.length === 0) {
+      if (document.lines && document.lines.length > 0) {
+        return this.splitMultilineEntries(document.lines);
       }
-      
-      return yDiff;
+      return [];
+    }
+
+    // Calculate median word height for adaptive vertical line tolerance
+    const wordHeights = validWords
+      .map(w => w.boundingBox?.height || 0)
+      .filter(h => h > 0);
+
+    const medianWordHeight = this.calculateMedian(wordHeights) || 20;
+    const lineTolerance = Math.max(medianWordHeight * 0.5, 5);
+
+    // Sort words primarily by vertical position (Y)
+    const sortedWords = [...validWords].sort((a, b) => {
+      const aY = a.boundingBox.y + a.boundingBox.height / 2;
+      const bY = b.boundingBox.y + b.boundingBox.height / 2;
+      return aY - bY;
     });
 
-    // Group words into lines
-    const lines: OcrLine[] = [];
-    let currentLineWords: OcrWord[] = [sortedWords[0]];
+    // Group words into line clusters using vertical proximity and overlap
+    const clusters: OcrWord[][] = [];
 
-    for (let i = 1; i < sortedWords.length; i++) {
-      const currentWord = sortedWords[i];
-      const lastWord = currentLineWords[currentLineWords.length - 1];
+    for (const word of sortedWords) {
+      const wordCenterY = word.boundingBox.y + word.boundingBox.height / 2;
+      const wordTop = word.boundingBox.y;
+      const wordBottom = word.boundingBox.y + word.boundingBox.height;
 
-      const currentCenterY = currentWord.boundingBox.y + currentWord.boundingBox.height / 2;
-      const lastCenterY = lastWord.boundingBox.y + lastWord.boundingBox.height / 2;
+      let bestCluster: OcrWord[] | null = null;
+      let minDiff = Infinity;
 
-      // Check if words should be on the same line
-      const verticalOverlap = Math.abs(currentCenterY - lastCenterY) < lineTolerance;
+      for (const cluster of clusters) {
+        const clusterTop = Math.min(...cluster.map(w => w.boundingBox.y));
+        const clusterBottom = Math.max(...cluster.map(w => w.boundingBox.y + w.boundingBox.height));
+        const clusterCenterY = clusterTop + (clusterBottom - clusterTop) / 2;
 
-      if (verticalOverlap) {
-        currentLineWords.push(currentWord);
+        const diff = Math.abs(wordCenterY - clusterCenterY);
+        const overlap = Math.min(clusterBottom, wordBottom) - Math.max(clusterTop, wordTop);
+        const minHeight = Math.min(clusterBottom - clusterTop, word.boundingBox.height);
+
+        if (diff < lineTolerance || (minHeight > 0 && overlap / minHeight > 0.4)) {
+          if (diff < minDiff) {
+            minDiff = diff;
+            bestCluster = cluster;
+          }
+        }
+      }
+
+      if (bestCluster) {
+        bestCluster.push(word);
       } else {
-        // Start new line
-        lines.push(this.createLineFromWords(currentLineWords));
-        currentLineWords = [currentWord];
+        clusters.push([word]);
       }
     }
 
-    // Add last line
-    if (currentLineWords.length > 0) {
-      lines.push(this.createLineFromWords(currentLineWords));
-    }
+    // Convert each cluster to an OcrLine, sorting words horizontally (X)
+    const lines: OcrLine[] = clusters.map(cluster => this.createLineFromWords(cluster));
 
-    // Detect and handle multi-column layouts
-    return this.detectColumns(lines);
+    // Sort lines vertically from top to bottom
+    lines.sort((a, b) => a.boundingBox.y - b.boundingBox.y);
+
+    return lines;
+  }
+
+  /**
+   * Helper to ensure lines containing \n are broken into separate lines
+   */
+  private static splitMultilineEntries(lines: OcrLine[]): OcrLine[] {
+    const result: OcrLine[] = [];
+    for (const line of lines) {
+      const text = line.text || '';
+      if (text.includes('\n')) {
+        const parts = text.split('\n').map(p => p.trim()).filter(Boolean);
+        const count = Math.max(parts.length, 1);
+        const subHeight = line.boundingBox.height / count;
+        parts.forEach((p, idx) => {
+          result.push({
+            text: p,
+            confidence: line.confidence,
+            boundingBox: {
+              x: line.boundingBox.x,
+              y: line.boundingBox.y + idx * subHeight,
+              width: line.boundingBox.width,
+              height: subHeight,
+            },
+            words: line.words || [],
+          });
+        });
+      } else {
+        result.push(line);
+      }
+    }
+    return result;
   }
 
   /**
    * Create a line from a group of words
    */
   private static createLineFromWords(words: OcrWord[]): OcrLine {
-    // Sort words by horizontal position
+    // Sort words left-to-right
     const sortedWords = [...words].sort((a, b) => a.boundingBox.x - b.boundingBox.x);
 
     const text = sortedWords.map(w => w.text).join(' ');
-    const confidence = sortedWords.reduce((sum, w) => sum + w.confidence, 0) / sortedWords.length;
+    const confidence = sortedWords.reduce((sum, w) => sum + (w.confidence || 0.8), 0) / sortedWords.length;
 
     // Calculate combined bounding box
     let minX = Infinity, minY = Infinity, maxX = 0, maxY = 0;
@@ -98,10 +138,10 @@ export class LayoutReconstructor {
     }
 
     const boundingBox: OcrBoundingBox = {
-      x: minX,
-      y: minY,
-      width: maxX - minX,
-      height: maxY - minY,
+      x: isFinite(minX) ? minX : 0,
+      y: isFinite(minY) ? minY : 0,
+      width: isFinite(maxX) && isFinite(minX) ? Math.max(maxX - minX, 0) : 0,
+      height: isFinite(maxY) && isFinite(minY) ? Math.max(maxY - minY, 0) : 0,
     };
 
     return {
@@ -113,41 +153,20 @@ export class LayoutReconstructor {
   }
 
   /**
-   * Detect multi-column layouts
-   * 
-   * If two lines overlap vertically but are horizontally separated,
-   * they are different columns.
-   */
-  private static detectColumns(lines: OcrLine[]): OcrLine[] {
-    if (lines.length < 2) {
-      return lines;
-    }
-
-    // This is a simplified column detection
-    // A more sophisticated version would analyze the entire document structure
-    return lines;
-  }
-
-  /**
    * Calculate median of an array of numbers
    */
   private static calculateMedian(values: number[]): number {
     if (values.length === 0) return 0;
-
     const sorted = [...values].sort((a, b) => a - b);
     const mid = Math.floor(sorted.length / 2);
-
     if (sorted.length % 2 === 0) {
       return (sorted[mid - 1] + sorted[mid]) / 2;
     }
-
     return sorted[mid];
   }
 
   /**
    * Reconstruct blocks from lines
-   * 
-   * Groups lines into logical blocks based on proximity
    */
   static reconstructBlocks(lines: OcrLine[]): OcrBlock[] {
     if (lines.length === 0) {
@@ -165,17 +184,14 @@ export class LayoutReconstructor {
 
       const verticalSpacing = currentLine.boundingBox.y - (lastLine.boundingBox.y + lastLine.boundingBox.height);
 
-      // Check if lines should be in the same block
-      if (verticalSpacing < lineSpacingTolerance * 2) {
+      if (verticalSpacing < lineSpacingTolerance * 2.5) {
         currentBlockLines.push(currentLine);
       } else {
-        // Start new block
         blocks.push(this.createBlockFromLines(currentBlockLines));
         currentBlockLines = [currentLine];
       }
     }
 
-    // Add last block
     if (currentBlockLines.length > 0) {
       blocks.push(this.createBlockFromLines(currentBlockLines));
     }
@@ -183,14 +199,10 @@ export class LayoutReconstructor {
     return blocks;
   }
 
-  /**
-   * Create a block from a group of lines
-   */
   private static createBlockFromLines(lines: OcrLine[]): OcrBlock {
     const text = lines.map(l => l.text).join('\n');
     const confidence = lines.reduce((sum, l) => sum + l.confidence, 0) / lines.length;
 
-    // Calculate combined bounding box
     let minX = Infinity, minY = Infinity, maxX = 0, maxY = 0;
     for (const line of lines) {
       minX = Math.min(minX, line.boundingBox.x);
@@ -200,10 +212,10 @@ export class LayoutReconstructor {
     }
 
     const boundingBox: OcrBoundingBox = {
-      x: minX,
-      y: minY,
-      width: maxX - minX,
-      height: maxY - minY,
+      x: isFinite(minX) ? minX : 0,
+      y: isFinite(minY) ? minY : 0,
+      width: isFinite(maxX) && isFinite(minX) ? Math.max(maxX - minX, 0) : 0,
+      height: isFinite(maxY) && isFinite(minY) ? Math.max(maxY - minY, 0) : 0,
     };
 
     return {
@@ -214,17 +226,13 @@ export class LayoutReconstructor {
     };
   }
 
-  /**
-   * Calculate median line spacing
-   */
   private static calculateMedianLineSpacing(lines: OcrLine[]): number {
-    if (lines.length < 2) return 20; // Default fallback
+    if (lines.length < 2) return 20;
 
     const spacings: number[] = [];
     for (let i = 1; i < lines.length; i++) {
       const currentLine = lines[i];
       const lastLine = lines[i - 1];
-      
       const spacing = currentLine.boundingBox.y - (lastLine.boundingBox.y + lastLine.boundingBox.height);
       if (spacing > 0) {
         spacings.push(spacing);
@@ -232,7 +240,6 @@ export class LayoutReconstructor {
     }
 
     if (spacings.length === 0) return 20;
-
     return this.calculateMedian(spacings);
   }
 }

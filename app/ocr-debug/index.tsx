@@ -111,7 +111,7 @@ export default function OCRDebugScreen() {
       {/* Extracted Data */}
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.accent }]}>FINAL EXTRACTED DATA</Text>
-        <Text style={[styles.label, { color: colors.textSecondary }]}>Overall Confidence: {(debugData.overallConfidence || 0 * 100).toFixed(1)}%</Text>
+        <Text style={[styles.label, { color: colors.textSecondary }]}>Overall Confidence: {((debugData.overallConfidence || 0) * 100).toFixed(1)}%</Text>
         
         <View style={styles.field}>
           <Text style={[styles.fieldLabel, { color: colors.accent }]}>Name:</Text>
