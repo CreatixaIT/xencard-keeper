@@ -243,10 +243,10 @@ export default function SearchScreen() {
                   detectedAction.type === 'CALL'
                     ? 'call'
                     : detectedAction.type === 'WHATSAPP'
-                    ? 'logo-whatsapp'
-                    : detectedAction.type === 'EMAIL'
-                    ? 'mail'
-                    : 'map'
+                      ? 'logo-whatsapp'
+                      : detectedAction.type === 'EMAIL'
+                        ? 'mail'
+                        : 'map'
                 }
                 size={18}
                 color={colors.accent}
