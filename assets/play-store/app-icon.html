@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 512px;
+            height: 512px;
+            overflow: hidden;
+        }
+        .icon {
+            width: 512px;
+            height: 512px;
+            background: linear-gradient(145deg, #0B0F17 0%, #0D1B2A 50%, #0F2027 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border-radius: 108px;
+        }
+
+        /* Ambient glow */
+        .glow1 {
+            position: absolute;
+            width: 350px;
+            height: 350px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,212,170,0.12) 0%, transparent 70%);
+            top: -50px;
+            right: -30px;
+        }
+        .glow2 {
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,150,255,0.08) 0%, transparent 70%);
+            bottom: -40px;
+            left: -20px;
+        }
+
+        /* Glass card behind */
+        .glass-card-bg {
+            position: absolute;
+            width: 240px;
+            height: 148px;
+            border-radius: 16px;
+            border: 1.5px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.03);
+            transform: rotate(-12deg) translate(-15px, 20px);
+            top: 140px;
+            left: 95px;
+        }
+        .glass-card-bg .line {
+            position: absolute;
+            height: 5px;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.06);
+        }
+        .glass-card-bg .l1 { width: 80px; top: 35px; left: 25px; background: rgba(0,212,170,0.15); }
+        .glass-card-bg .l2 { width: 150px; top: 55px; left: 25px; height: 4px; }
+        .glass-card-bg .l3 { width: 110px; top: 70px; left: 25px; height: 4px; }
+        .glass-card-bg .l4 { width: 70px; top: 85px; left: 25px; height: 4px; }
+
+        /* Main glass card */
+        .glass-card {
+            position: absolute;
+            width: 260px;
+            height: 158px;
+            border-radius: 18px;
+            border: 1.5px solid rgba(0,212,170,0.25);
+            background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%);
+            transform: rotate(5deg) translate(10px, -10px);
+            top: 125px;
+            left: 115px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.3), 0 0 30px rgba(0,212,170,0.08);
+        }
+        .glass-card .line {
+            position: absolute;
+            height: 6px;
+            border-radius: 3px;
+        }
+        .glass-card .l1 { width: 100px; top: 32px; left: 22px; background: rgba(0,212,170,0.4); }
+        .glass-card .l2 { width: 170px; top: 52px; left: 22px; height: 4px; background: rgba(255,255,255,0.12); }
+        .glass-card .l3 { width: 130px; top: 68px; left: 22px; height: 4px; background: rgba(255,255,255,0.08); }
+        .glass-card .l4 { width: 90px; top: 84px; left: 22px; height: 4px; background: rgba(255,255,255,0.06); }
+        .glass-card .l5 { width: 110px; top: 100px; left: 22px; height: 4px; background: rgba(255,255,255,0.05); }
+
+        /* Scan beam */
+        .scan-beam {
+            position: absolute;
+            width: 260px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent 0%, #00D4AA 30%, #00FFD0 50%, #00D4AA 70%, transparent 100%);
+            top: 215px;
+            left: 118px;
+            transform: rotate(5deg);
+            box-shadow: 0 0 15px rgba(0,212,170,0.5), 0 0 30px rgba(0,212,170,0.2);
+        }
+
+        /* X Logo */
+        .x-logo {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+        .x-letter {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 120px;
+            font-weight: 900;
+            color: transparent;
+            background: linear-gradient(135deg, #00FFD0 0%, #00D4AA 40%, #00B894 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            filter: drop-shadow(0 4px 20px rgba(0,212,170,0.4));
+            line-height: 1;
+        }
+
+        /* Bottom text */
+        .app-name {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.85);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="icon">
+        <div class="glow1"></div>
+        <div class="glow2"></div>
+
+        <div class="glass-card-bg">
+            <div class="line l1"></div>
+            <div class="line l2"></div>
+            <div class="line l3"></div>
+            <div class="line l4"></div>
+        </div>
+
+        <div class="glass-card">
+            <div class="line l1"></div>
+            <div class="line l2"></div>
+            <div class="line l3"></div>
+            <div class="line l4"></div>
+            <div class="line l5"></div>
+        </div>
+
+        <div class="scan-beam"></div>
+
+        <div class="x-logo">
+            <div class="x-letter">X</div>
+        </div>
+
+        <div class="app-name">XENCARD</div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { width: 1080px; height: 1920px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+.screen {
+    width: 1080px; height: 1920px;
+    background: linear-gradient(180deg, #0B0F17 0%, #0D1322 100%);
+    position: relative; overflow: hidden;
+    display: flex; flex-direction: column;
+}
+/* Camera viewfinder area */
+.viewfinder {
+    flex: 1;
+    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+}
+/* Scan frame */
+.scan-frame {
+    width: 800px; height: 480px;
+    border: 3px solid rgba(0,212,170,0.6);
+    border-radius: 24px;
+    position: relative;
+    box-shadow: 0 0 40px rgba(0,212,170,0.15);
+}
+.corner { position: absolute; width: 50px; height: 50px; border-color: #00D4AA; }
+.corner.tl { top: -3px; left: -3px; border-top: 5px solid #00D4AA; border-left: 5px solid #00D4AA; border-radius: 24px 0 0 0; }
+.corner.tr { top: -3px; right: -3px; border-top: 5px solid #00D4AA; border-right: 5px solid #00D4AA; border-radius: 0 24px 0 0; }
+.corner.bl { bottom: -3px; left: -3px; border-bottom: 5px solid #00D4AA; border-left: 5px solid #00D4AA; border-radius: 0 0 0 24px; }
+.corner.br { bottom: -3px; right: -3px; border-bottom: 5px solid #00D4AA; border-right: 5px solid #00D4AA; border-radius: 0 0 24px 0; }
+
+/* Simulated card inside frame */
+.sim-card {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 680px; height: 380px;
+    background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+    border-radius: 16px;
+    padding: 50px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+}
+.sim-card .c-name { font-size: 42px; font-weight: 800; color: #1a1a2e; margin-bottom: 8px; }
+.sim-card .c-title { font-size: 26px; color: #666; margin-bottom: 30px; }
+.sim-card .c-company { font-size: 30px; font-weight: 700; color: #0f3460; margin-bottom: 30px; }
+.sim-card .c-detail { font-size: 22px; color: #555; margin-bottom: 10px; display: flex; gap: 12px; align-items: center; }
+.sim-card .c-icon { color: #0f3460; }
+.sim-card .c-logo {
+    position: absolute; top: 40px; right: 50px;
+    width: 80px; height: 80px; border-radius: 16px;
+    background: linear-gradient(135deg, #0f3460, #1a1a2e);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px; font-weight: 900; color: #fff;
+}
+
+/* Scan line animation (static) */
+.scan-line {
+    position: absolute;
+    width: 780px; height: 3px;
+    background: linear-gradient(90deg, transparent, #00FFD0, #00D4AA, transparent);
+    top: 55%;
+    left: 50%; transform: translateX(-50%);
+    box-shadow: 0 0 20px rgba(0,212,170,0.5);
+}
+
+/* Top bar */
+.top-bar {
+    position: absolute; top: 60px; left: 40px; right: 40px;
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 20;
+}
+.back-btn {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: rgba(0,0,0,0.4); backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; color: #fff;
+}
+.flash-btn {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: rgba(0,0,0,0.4); backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; color: #fff;
+}
+
+/* Hint text */
+.hint {
+    position: absolute; top: 180px; left: 50%; transform: translateX(-50%);
+    font-size: 30px; color: rgba(255,255,255,0.7);
+    background: rgba(0,0,0,0.4); padding: 12px 32px; border-radius: 50px;
+    backdrop-filter: blur(10px);
+}
+
+/* Bottom controls */
+.bottom-controls {
+    padding: 50px 40px 80px;
+    display: flex; align-items: center; justify-content: center; gap: 60px;
+    position: relative; z-index: 10;
+}
+.capture-btn {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    border: 5px solid #00D4AA;
+    display: flex; align-items: center; justify-content: center;
+}
+.capture-inner {
+    width: 76px; height: 76px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00D4AA, #00B894);
+}
+.gallery-btn {
+    width: 70px; height: 70px; border-radius: 18px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px;
+}
+.mode-label {
+    font-size: 26px; color: rgba(255,255,255,0.5);
+    text-align: center; padding-top: 10px;
+}
+</style>
+</head>
+<body>
+<div class="screen">
+    <div class="viewfinder">
+        <div class="top-bar">
+            <div class="back-btn">←</div>
+            <div class="flash-btn">⚡</div>
+        </div>
+        <div class="hint">📇 Position card within frame</div>
+        <div class="scan-frame">
+            <div class="corner tl"></div>
+            <div class="corner tr"></div>
+            <div class="corner bl"></div>
+            <div class="corner br"></div>
+            <div class="sim-card">
+                <div class="c-logo">TV</div>
+                <div class="c-name">Ahmed Hassan</div>
+                <div class="c-title">Chief Executive Officer</div>
+                <div class="c-company">TechVista Solutions</div>
+                <div class="c-detail"><span class="c-icon">📱</span> +880 1712-345678</div>
+                <div class="c-detail"><span class="c-icon">✉️</span> ahmed@techvista.com</div>
+                <div class="c-detail"><span class="c-icon">🌐</span> www.techvista.com</div>
+                <div class="c-detail"><span class="c-icon">📍</span> Gulshan 2, Dhaka</div>
+            </div>
+            <div class="scan-line"></div>
+        </div>
+    </div>
+    <div class="bottom-controls">
+        <div class="gallery-btn">🖼️</div>
+        <div>
+            <div class="capture-btn"><div class="capture-inner"></div></div>
+            <div class="mode-label">Scan</div>
+        </div>
+        <div class="gallery-btn" style="visibility: hidden">🖼️</div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { width: 1080px; height: 1920px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+.screen {
+    width: 1080px; height: 1920px;
+    background: linear-gradient(180deg, #0B0F17 0%, #0D1322 100%);
+    padding: 60px 40px;
+    position: relative; overflow: hidden;
+    display: flex; flex-direction: column; align-items: center;
+}
+.amb1 { position: absolute; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(0,212,170,0.07) 0%, transparent 70%); top: 200px; left: -100px; }
+.amb2 { position: absolute; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, rgba(108,92,231,0.05) 0%, transparent 70%); bottom: 400px; right: -80px; }
+.status-bar { width: 100%; display: flex; justify-content: space-between; padding: 10px 10px 30px; color: rgba(255,255,255,0.6); font-size: 28px; font-weight: 500; position: relative; z-index: 10; }
+
+.header { width: 100%; position: relative; z-index: 10; margin-bottom: 40px; }
+.title { font-size: 48px; font-weight: 800; color: #fff; }
+.title .accent { color: #00D4AA; }
+.subtitle { font-size: 28px; color: rgba(255,255,255,0.4); margin-top: 8px; }
+
+/* Executive card */
+.exec-card {
+    width: 920px;
+    height: 540px;
+    background: linear-gradient(145deg, #0D1B2A 0%, #1B2838 50%, #0F2027 100%);
+    border-radius: 28px;
+    border: 1.5px solid rgba(0,212,170,0.2);
+    padding: 50px;
+    position: relative; z-index: 10;
+    margin-bottom: 40px;
+    box-shadow: 0 16px 60px rgba(0,0,0,0.4), 0 0 40px rgba(0,212,170,0.08);
+    overflow: hidden;
+}
+.exec-glow {
+    position: absolute; width: 300px; height: 300px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,212,170,0.08) 0%, transparent 70%);
+    top: -50px; right: -50px;
+}
+.exec-name {
+    font-size: 46px; font-weight: 800; color: #fff;
+    margin-bottom: 10px; position: relative;
+}
+.exec-title-role {
+    font-size: 26px; color: #00D4AA; font-weight: 600;
+    margin-bottom: 6px; position: relative;
+}
+.exec-company {
+    font-size: 28px; color: rgba(255,255,255,0.5);
+    margin-bottom: 40px; position: relative;
+}
+.exec-divider {
+    width: 80px; height: 3px; background: #00D4AA;
+    border-radius: 2px; margin-bottom: 30px;
+    position: relative;
+}
+.exec-detail {
+    font-size: 24px; color: rgba(255,255,255,0.6);
+    margin-bottom: 14px; display: flex; gap: 14px; align-items: center;
+    position: relative;
+}
+.exec-logo {
+    position: absolute; bottom: 40px; right: 50px;
+    font-size: 60px; font-weight: 900; color: rgba(0,212,170,0.15);
+    position: relative;
+}
+/* QR area */
+.qr-section {
+    position: absolute; bottom: 40px; right: 50px;
+    width: 120px; height: 120px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+}
+.qr-placeholder {
+    width: 90px; height: 90px;
+    background: repeating-conic-gradient(rgba(255,255,255,0.3) 0% 25%, transparent 0% 50%) 50% / 18px 18px;
+    border-radius: 8px;
+}
+
+/* Action buttons */
+.card-actions {
+    display: flex; gap: 20px; width: 100%;
+    position: relative; z-index: 10;
+    margin-bottom: 40px;
+}
+.card-action-btn {
+    flex: 1;
+    padding: 24px;
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    font-size: 26px; font-weight: 700;
+}
+.btn-primary {
+    background: linear-gradient(135deg, #00D4AA, #00B894);
+    color: #0B0F17;
+}
+.btn-secondary {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.7);
+}
+
+/* Card list */
+.card-list-title {
+    width: 100%; font-size: 28px; font-weight: 700;
+    color: rgba(255,255,255,0.5); margin-bottom: 20px;
+    position: relative; z-index: 10;
+}
+.mini-card {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    padding: 24px 28px;
+    margin-bottom: 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: relative; z-index: 10;
+}
+.mini-info { display: flex; align-items: center; gap: 20px; }
+.mini-icon {
+    width: 56px; height: 56px; border-radius: 14px;
+    background: rgba(0,212,170,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+}
+.mini-name { font-size: 28px; font-weight: 600; color: #fff; }
+.mini-role { font-size: 22px; color: rgba(255,255,255,0.4); }
+.mini-badge {
+    padding: 8px 16px; border-radius: 10px;
+    background: rgba(0,212,170,0.1);
+    font-size: 20px; color: #00D4AA; font-weight: 600;
+}
+</style>
+</head>
+<body>
+<div class="screen">
+    <div class="amb1"></div>
+    <div class="amb2"></div>
+    <div class="status-bar"><span>9:41</span><span>⚡ 94%</span></div>
+    <div class="header">
+        <div class="title"><span class="accent">Personal</span> Cards</div>
+        <div class="subtitle">Your digital business cards</div>
+    </div>
+    <div class="exec-card">
+        <div class="exec-glow"></div>
+        <div class="exec-name">Riduan Islam</div>
+        <div class="exec-title-role">Software Engineer</div>
+        <div class="exec-company">Creatixa IT Solutions</div>
+        <div class="exec-divider"></div>
+        <div class="exec-detail">📱 +880 1700-000000</div>
+        <div class="exec-detail">✉️ riduan@creatixa.com</div>
+        <div class="exec-detail">🌐 www.creatixa.com</div>
+        <div class="exec-detail">📍 Dhaka, Bangladesh</div>
+        <div class="qr-section"><div class="qr-placeholder"></div></div>
+    </div>
+    <div class="card-actions">
+        <div class="card-action-btn btn-primary">📤 Share Card</div>
+        <div class="card-action-btn btn-secondary">✏️ Edit</div>
+    </div>
+    <div class="card-list-title">Your Cards</div>
+    <div class="mini-card">
+        <div class="mini-info">
+            <div class="mini-icon">💼</div>
+            <div><div class="mini-name">Work Card</div><div class="mini-role">Creatixa IT Solutions</div></div>
+        </div>
+        <div class="mini-badge">Active</div>
+    </div>
+    <div class="mini-card">
+        <div class="mini-info">
+            <div class="mini-icon">🎨</div>
+            <div><div class="mini-name">Freelance Card</div><div class="mini-role">Independent Developer</div></div>
+        </div>
+        <div class="mini-badge" style="background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4);">Draft</div>
+    </div>
+</div>
+</body>
+</html>
