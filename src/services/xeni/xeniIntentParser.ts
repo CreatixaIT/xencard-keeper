@@ -4,20 +4,24 @@ export function parseXeniIntent(query: string): XeniIntent {
   const lowerQuery = query.toLowerCase().trim();
 
   // Action-based intents
-  if (lowerQuery.startsWith('call ')) {
-    return { type: 'CALL', contactId: '' }; // contactId will be resolved later
+  if (lowerQuery.startsWith('call ') || lowerQuery.startsWith('dial ')) {
+    const targetName = lowerQuery.replace(/^(call|dial)\s+/i, '').trim();
+    return { type: 'CALL', contactId: '', targetName };
   }
 
-  if (lowerQuery.startsWith('whatsapp ') || lowerQuery.startsWith('message ')) {
-    return { type: 'WHATSAPP', contactId: '' };
+  if (lowerQuery.startsWith('whatsapp ') || lowerQuery.startsWith('message ') || lowerQuery.startsWith('text ')) {
+    const targetName = lowerQuery.replace(/^(whatsapp|message|text)\s+/i, '').trim();
+    return { type: 'WHATSAPP', contactId: '', targetName };
   }
 
   if (lowerQuery.startsWith('email ') || lowerQuery.startsWith('mail ')) {
-    return { type: 'EMAIL', contactId: '' };
+    const targetName = lowerQuery.replace(/^(email|mail)\s+/i, '').trim();
+    return { type: 'EMAIL', contactId: '', targetName };
   }
 
   if (lowerQuery.startsWith('map ') || lowerQuery.startsWith('location ') || lowerQuery.startsWith('where is ')) {
-    return { type: 'MAPS', contactId: '' };
+    const targetName = lowerQuery.replace(/^(map|location|where is)\s+/i, '').trim();
+    return { type: 'MAPS', contactId: '', targetName };
   }
 
   // Search-based intents

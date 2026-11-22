@@ -46,7 +46,6 @@ export async function POST(request: Request) {
   try {
     const body: OCRRequest = await request.json();
     const imageBase64 = body.imageBase64 || body.image;
-    const mimeType = body.mimeType || 'image/jpeg';
 
     if (!imageBase64) {
       return Response.json(

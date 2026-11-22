@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { ThemeMode } from '../../src/contexts/ThemeContext';
+import { GlassCard } from '../../src/components/glass/GlassCard';
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
@@ -14,59 +15,96 @@ export default function SettingsScreen() {
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={{ paddingBottom: insets.bottom + 40 }}
+    >
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.accent} />
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={[styles.backButton, { backgroundColor: colors.glassCardSubtle, borderColor: colors.glassBorder }]}
+        >
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Settings</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Settings & Appearance</Text>
         <View style={styles.placeholder} />
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Appearance</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Display Theme</Text>
         
-        <TouchableOpacity
-          style={[styles.option, { backgroundColor: colors.card, borderColor: colors.border }]}
+        <GlassCard
+          variant={mode === 'dark' ? 'glow' : 'subtle'}
+          style={styles.option}
           onPress={() => handleThemeChange('dark')}
         >
           <View style={styles.optionContent}>
-            <Ionicons name="moon" size={24} color={colors.accent} />
-            <Text style={[styles.optionText, { color: colors.text }]}>Dark</Text>
+            <View style={[styles.iconWrap, { backgroundColor: 'rgba(0, 242, 254, 0.12)' }]}>
+              <Ionicons name="moon" size={20} color={colors.accent} />
+            </View>
+            <View>
+              <Text style={[styles.optionText, { color: colors.text }]}>Dark Glassmorphism</Text>
+              <Text style={[styles.optionSubtext, { color: colors.textSecondary }]}>Deep dark frosted glass with neon cyan glow</Text>
+            </View>
           </View>
-          {mode === 'dark' && <Ionicons name="checkmark-circle" size={24} color={colors.accent} />}
-        </TouchableOpacity>
+          {mode === 'dark' && <Ionicons name="checkmark-circle" size={22} color={colors.accent} />}
+        </GlassCard>
 
-        <TouchableOpacity
-          style={[styles.option, { backgroundColor: colors.card, borderColor: colors.border }]}
+        <GlassCard
+          variant={mode === 'light' ? 'glow' : 'subtle'}
+          style={styles.option}
           onPress={() => handleThemeChange('light')}
         >
           <View style={styles.optionContent}>
-            <Ionicons name="sunny" size={24} color={colors.accent} />
-            <Text style={[styles.optionText, { color: colors.text }]}>Light</Text>
+            <View style={[styles.iconWrap, { backgroundColor: 'rgba(2, 132, 199, 0.12)' }]}>
+              <Ionicons name="sunny" size={20} color={colors.accent} />
+            </View>
+            <View>
+              <Text style={[styles.optionText, { color: colors.text }]}>Light Frosted</Text>
+              <Text style={[styles.optionSubtext, { color: colors.textSecondary }]}>Clean bright translucent aesthetic</Text>
+            </View>
           </View>
-          {mode === 'light' && <Ionicons name="checkmark-circle" size={24} color={colors.accent} />}
-        </TouchableOpacity>
+          {mode === 'light' && <Ionicons name="checkmark-circle" size={22} color={colors.accent} />}
+        </GlassCard>
 
-        <TouchableOpacity
-          style={[styles.option, { backgroundColor: colors.card, borderColor: colors.border }]}
+        <GlassCard
+          variant={mode === 'system' ? 'glow' : 'subtle'}
+          style={styles.option}
           onPress={() => handleThemeChange('system')}
         >
           <View style={styles.optionContent}>
-            <Ionicons name="phone-portrait" size={24} color={colors.accent} />
-            <Text style={[styles.optionText, { color: colors.text }]}>System</Text>
+            <View style={[styles.iconWrap, { backgroundColor: 'rgba(168, 85, 247, 0.12)' }]}>
+              <Ionicons name="phone-portrait" size={20} color="#A855F7" />
+            </View>
+            <View>
+              <Text style={[styles.optionText, { color: colors.text }]}>System Default</Text>
+              <Text style={[styles.optionSubtext, { color: colors.textSecondary }]}>Match operating system preference</Text>
+            </View>
           </View>
-          {mode === 'system' && <Ionicons name="checkmark-circle" size={24} color={colors.accent} />}
-        </TouchableOpacity>
+          {mode === 'system' && <Ionicons name="checkmark-circle" size={22} color={colors.accent} />}
+        </GlassCard>
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>About</Text>
-        <View style={[styles.infoBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.infoText, { color: colors.text }]}>Xencard Keeper</Text>
-          <Text style={[styles.infoSubtext, { color: colors.textSecondary }]}>Version 1.0.0</Text>
-          <Text style={[styles.infoSubtext, { color: colors.textSecondary }]}>Powered by Xeni</Text>
-        </View>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Application Info</Text>
+        <GlassCard variant="default" style={styles.infoBox}>
+          <View style={styles.infoRow}>
+            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Application</Text>
+            <Text style={[styles.infoValue, { color: colors.text }]}>Xencard Keeper</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Engine</Text>
+            <Text style={[styles.infoValue, { color: colors.accent }]}>Powered by Xeni AI</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Architecture</Text>
+            <Text style={[styles.infoValue, { color: colors.text }]}>100% Offline-First (SQLite + ML Kit)</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Build Version</Text>
+            <Text style={[styles.infoValue, { color: colors.textSecondary }]}>v1.0.0 (Release APK)</Text>
+          </View>
+        </GlassCard>
       </View>
     </ScrollView>
   );
@@ -80,56 +118,78 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
   },
   backButton: {
-    padding: 8,
+    width: 38,
+    height: 38,
+    borderRadius: 13,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '800',
   },
   placeholder: {
-    width: 40,
+    width: 38,
   },
   section: {
-    margin: 16,
-    marginTop: 0,
+    marginHorizontal: 16,
+    marginTop: 12,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 12,
+    fontSize: 16,
+    fontWeight: '800',
+    marginBottom: 10,
   },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 8,
+    borderRadius: 18,
+    marginBottom: 10,
   },
   optionContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 14,
+    flex: 1,
+  },
+  iconWrap: {
+    width: 42,
+    height: 42,
+    borderRadius: 13,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   optionText: {
-    fontSize: 16,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  optionSubtext: {
+    fontSize: 12,
+    marginTop: 2,
   },
   infoBox: {
     padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
+    borderRadius: 18,
+    gap: 12,
   },
-  infoText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 4,
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  infoSubtext: {
-    fontSize: 14,
-    marginBottom: 4,
+  infoLabel: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  infoValue: {
+    fontSize: 13,
+    fontWeight: '700',
   },
 });

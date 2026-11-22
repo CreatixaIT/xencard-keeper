@@ -2,40 +2,88 @@ import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, Alert, Linking, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { searchContacts, filterContactsByIndustry, getContacts } from '../../src/db/repositories/contactRepository';
+import { parseXeniIntent, resolveContactForAction } from '../../src/services/xeni/xeniIntentParser';
+import { useTheme } from '../../src/contexts/ThemeContext';
+import { GlassCard } from '../../src/components/glass/GlassCard';
 import type { VisitingCard, Industry } from '../../src/types';
+
+const INDUSTRIES: (Industry | 'All')[] = [
+  'All',
+  'Technology',
+  'Finance',
+  'Healthcare',
+  'Automotive',
+  'Real Estate',
+  'Other',
+];
+
+const PROMPT_SUGGESTIONS = [
+  'Tech in Dhaka',
+  'Call Alex',
+  'WhatsApp Maria',
+  'Healthcare',
+  'Finance',
+  'Where is Google',
+];
 
 export default function SearchScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
   const [query, setQuery] = useState('');
   const [contacts, setContacts] = useState<VisitingCard[]>([]);
+  const [allContacts, setAllContacts] = useState<VisitingCard[]>([]);
   const [selectedIndustry, setSelectedIndustry] = useState<Industry | 'All'>('All');
-  const [showActionSheet, setShowActionSheet] = useState(false);
-  const [selectedContact, setSelectedContact] = useState<VisitingCard | null>(null);
-
-  const industries: (Industry | 'All')[] = ['All', 'Technology', 'Finance', 'Automotive', 'Healthcare', 'Real Estate', 'Other'];
+  const [detectedAction, setDetectedAction] = useState<{
+    type: 'CALL' | 'WHATSAPP' | 'EMAIL' | 'MAPS';
+    targetName: string;
+    matchedContact: VisitingCard | null;
+  } | null>(null);
 
   useEffect(() => {
     loadAllContacts();
   }, []);
 
   useEffect(() => {
-    performSearch();
+    performSmartSearch();
   }, [query, selectedIndustry]);
 
   const loadAllContacts = async () => {
     const all = await getContacts();
+    setAllContacts(all);
     setContacts(all);
   };
 
-  const performSearch = async () => {
+  const performSmartSearch = async () => {
+    const trimmed = query.trim();
+
+    // Check for natural language assistant intent
+    if (trimmed) {
+      const intent = parseXeniIntent(trimmed);
+      if (['CALL', 'WHATSAPP', 'EMAIL', 'MAPS'].includes(intent.type) && 'targetName' in intent && intent.targetName) {
+        const contactId = resolveContactForAction(intent, allContacts, intent.targetName);
+        const match = contactId ? allContacts.find((c) => c.id === contactId) || null : null;
+        setDetectedAction({
+          type: intent.type as any,
+          targetName: intent.targetName,
+          matchedContact: match,
+        });
+      } else {
+        setDetectedAction(null);
+      }
+    } else {
+      setDetectedAction(null);
+    }
+
     if (selectedIndustry === 'All') {
-      const results = await searchContacts(query);
+      const results = await searchContacts(trimmed);
       setContacts(results);
     } else {
       const results = await filterContactsByIndustry(selectedIndustry);
-      if (query) {
-        const searchResults = await searchContacts(query);
+      if (trimmed) {
+        const searchResults = await searchContacts(trimmed);
         const filtered = searchResults.filter((c) => c.industry === selectedIndustry);
         setContacts(filtered);
       } else {
@@ -44,96 +92,140 @@ export default function SearchScreen() {
     }
   };
 
-  const handleAction = (action: string) => {
-    if (!selectedContact) return;
+  const executeDetectedAction = () => {
+    if (!detectedAction?.matchedContact) return;
+    const c = detectedAction.matchedContact;
 
-    switch (action) {
-      case 'call':
-        if (selectedContact.phone) {
-          Linking.openURL(`tel:${selectedContact.phone}`);
+    switch (detectedAction.type) {
+      case 'CALL':
+        if (c.phone) Linking.openURL(`tel:${c.phone}`);
+        else Alert.alert('No Phone', 'Contact has no phone number');
+        break;
+      case 'WHATSAPP': {
+        const p = c.whatsappNumber || c.phone;
+        if (p) {
+          const clean = p.replace(/[^0-9]/g, '');
+          Linking.openURL(`https://wa.me/${clean}`);
         } else {
-          Alert.alert('No Phone', 'This contact does not have a phone number');
+          Alert.alert('No WhatsApp', 'No mobile number found');
         }
         break;
-      case 'whatsapp':
-        if (selectedContact.phone) {
-          const whatsappUrl = `whatsapp://send?phone=${selectedContact.phone}`;
-          Linking.openURL(whatsappUrl).catch(() => {
-            Alert.alert('WhatsApp Not Available', 'WhatsApp is not installed on your device');
-          });
-        } else {
-          Alert.alert('No Phone', 'This contact does not have a phone number');
-        }
+      }
+      case 'EMAIL':
+        if (c.email) Linking.openURL(`mailto:${c.email}`);
+        else Alert.alert('No Email', 'No email address registered');
         break;
-      case 'email':
-        if (selectedContact.email) {
-          Linking.openURL(`mailto:${selectedContact.email}`);
+      case 'MAPS':
+        if (c.address) {
+          Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(c.address)}`);
         } else {
-          Alert.alert('No Email', 'This contact does not have an email address');
-        }
-        break;
-      case 'maps':
-        if (selectedContact.address) {
-          const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(selectedContact.address)}`;
-          Linking.openURL(mapsUrl);
-        } else {
-          Alert.alert('No Address', 'This contact does not have an address');
+          Alert.alert('No Address', 'No location saved for this contact');
         }
         break;
     }
-
-    setShowActionSheet(false);
-    setSelectedContact(null);
   };
 
   const renderContact = ({ item }: { item: VisitingCard }) => (
-    <TouchableOpacity style={styles.contactItem} onPress={() => router.push(`/contact/${item.id}`)}>
-      {item.thumbnailUri ? (
-        <Image source={{ uri: item.thumbnailUri }} style={styles.thumbnail} />
-      ) : (
-        <View style={styles.thumbnailPlaceholder}>
-          <Ionicons name="person" size={24} color="#8E8E93" />
+    <GlassCard
+      variant="subtle"
+      style={styles.contactItem}
+      onPress={() => router.push(`/contact/${item.id}`)}
+    >
+      <View style={styles.contactRow}>
+        {item.thumbnailUri ? (
+          <Image source={{ uri: item.thumbnailUri }} style={styles.thumbnail} />
+        ) : (
+          <View style={[styles.thumbnailPlaceholder, { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' }]}>
+            <Text style={[styles.avatarInitial, { color: colors.accent }]}>
+              {(item.personName || 'U').charAt(0).toUpperCase()}
+            </Text>
+          </View>
+        )}
+
+        <View style={styles.contactInfo}>
+          <View style={styles.contactHeaderLine}>
+            <Text style={[styles.contactName, { color: colors.text }]} numberOfLines={1}>
+              {item.personName}
+            </Text>
+            {item.industry ? (
+              <View style={[styles.industryBadge, { backgroundColor: `${colors.accent}15` }]}>
+                <Text style={[styles.industryBadgeText, { color: colors.accent }]}>
+                  {item.industry}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+
+          <Text style={[styles.contactCompany, { color: colors.textSecondary }]} numberOfLines={1}>
+            {item.jobTitle ? `${item.jobTitle} • ` : ''}{item.companyName}
+          </Text>
+
+          {item.phone || item.city ? (
+            <Text style={[styles.contactMeta, { color: colors.textSecondary }]} numberOfLines={1}>
+              {item.phone || ''}{item.phone && item.city ? ' • ' : ''}{item.city || ''}
+            </Text>
+          ) : null}
         </View>
-      )}
-      <View style={styles.contactInfo}>
-        <Text style={styles.contactName}>{item.personName}</Text>
-        <Text style={styles.contactCompany}>{item.companyName}</Text>
-        {item.jobTitle && <Text style={styles.contactJobTitle}>{item.jobTitle}</Text>}
+
+        <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
       </View>
-      <Text style={styles.contactIndustry}>{item.industry}</Text>
-    </TouchableOpacity>
+    </GlassCard>
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Search Contacts</Text>
-        <Text style={styles.headerSubtitle}>Find your business cards quickly</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+        <View style={styles.headerTitleRow}>
+          <Ionicons name="sparkles" size={24} color={colors.accent} />
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Xeni Smart Search</Text>
+        </View>
+        <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
+          Instant offline search, industry filter & natural voice-like actions
+        </Text>
       </View>
 
+      {/* Glass Search Input */}
       <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search by name, company, or phone..."
-          value={query}
-          onChangeText={setQuery}
-          placeholderTextColor="#8E8E93"
-          onSubmitEditing={performSearch}
-        />
+        <GlassCard variant="glow" style={styles.searchBar}>
+          <Ionicons name="search" size={20} color={colors.accent} />
+          <TextInput
+            style={[styles.searchInput, { color: colors.text }]}
+            placeholder="Search by name, company, city, or 'Call Alex'..."
+            value={query}
+            onChangeText={setQuery}
+            placeholderTextColor={colors.textSecondary}
+            returnKeyType="search"
+          />
+          {query.length > 0 && (
+            <TouchableOpacity onPress={() => setQuery('')}>
+              <Ionicons name="close-circle" size={18} color={colors.textSecondary} />
+            </TouchableOpacity>
+          )}
+        </GlassCard>
       </View>
 
-      <View style={styles.industryFilter}>
+      {/* Smart Query Suggestion Pills */}
+      <View style={styles.suggestionWrap}>
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
-          data={industries}
+          data={PROMPT_SUGGESTIONS}
           keyExtractor={(item) => item}
+          contentContainerStyle={styles.suggestionList}
           renderItem={({ item }) => (
             <TouchableOpacity
-              style={[styles.industryChip, selectedIndustry === item && styles.industryChipActive]}
-              onPress={() => setSelectedIndustry(item)}
+              style={[
+                styles.suggestionChip,
+                {
+                  backgroundColor: colors.glassCardSubtle,
+                  borderColor: colors.glassBorder,
+                },
+              ]}
+              onPress={() => setQuery(item)}
             >
-              <Text style={[styles.industryChipText, selectedIndustry === item && styles.industryChipTextActive]}>
+              <Ionicons name="bulb-outline" size={12} color={colors.accent} />
+              <Text style={[styles.suggestionChipText, { color: colors.textSecondary }]}>
                 {item}
               </Text>
             </TouchableOpacity>
@@ -141,54 +233,97 @@ export default function SearchScreen() {
         />
       </View>
 
+      {/* Detected Xeni Action Card */}
+      {detectedAction && detectedAction.matchedContact && (
+        <GlassCard variant="accent" style={styles.actionCard}>
+          <View style={styles.actionCardHeader}>
+            <View style={styles.actionBadgeWrap}>
+              <Ionicons
+                name={
+                  detectedAction.type === 'CALL'
+                    ? 'call'
+                    : detectedAction.type === 'WHATSAPP'
+                    ? 'logo-whatsapp'
+                    : detectedAction.type === 'EMAIL'
+                    ? 'mail'
+                    : 'map'
+                }
+                size={18}
+                color={colors.accent}
+              />
+              <Text style={[styles.actionBadgeTitle, { color: colors.accent }]}>
+                XENI DIRECT ACTION
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={[styles.executeButton, { backgroundColor: colors.accent }]}
+              onPress={executeDetectedAction}
+            >
+              <Text style={styles.executeButtonText}>
+                {detectedAction.type} NOW
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <Text style={[styles.actionContactName, { color: colors.text }]}>
+            Target: {detectedAction.matchedContact.personName} ({detectedAction.matchedContact.companyName})
+          </Text>
+        </GlassCard>
+      )}
+
+      {/* Industry Filter Bar */}
+      <View style={styles.industryFilter}>
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={INDUSTRIES}
+          keyExtractor={(item) => item}
+          contentContainerStyle={styles.filterChipList}
+          renderItem={({ item }) => {
+            const active = selectedIndustry === item;
+            return (
+              <TouchableOpacity
+                style={[
+                  styles.industryChip,
+                  {
+                    backgroundColor: active ? colors.accent : colors.glassCardSubtle,
+                    borderColor: active ? colors.accent : colors.glassBorder,
+                  },
+                ]}
+                onPress={() => setSelectedIndustry(item)}
+              >
+                <Text
+                  style={[
+                    styles.industryChipText,
+                    { color: active ? '#0B0F17' : colors.textSecondary, fontWeight: active ? '700' : '500' },
+                  ]}
+                >
+                  {item}
+                </Text>
+              </TouchableOpacity>
+            );
+          }}
+        />
+      </View>
+
+      {/* Results List */}
       <FlatList
         data={contacts}
         renderItem={renderContact}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        removeClippedSubviews={true}
-        maxToRenderPerBatch={10}
-        windowSize={5}
-        initialNumToRender={10}
+        contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 95 }]}
+        showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>No contacts found</Text>
-            <Text style={styles.emptyHint}>Try searching by name, company, or phone number</Text>
+            <View style={[styles.emptyIconWrap, { backgroundColor: colors.glassCard }]}>
+              <Ionicons name="search" size={40} color={colors.accent} />
+            </View>
+            <Text style={[styles.emptyText, { color: colors.text }]}>No Contacts Found</Text>
+            <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>
+              Try searching by company, title, city, or phone number
+            </Text>
           </View>
         }
       />
-
-      <TouchableOpacity style={styles.fab} onPress={() => router.push('/contact/create')}>
-        <Text style={styles.fabText}>+</Text>
-      </TouchableOpacity>
-
-      {showActionSheet && selectedContact && (
-        <View style={styles.actionSheet}>
-          <View style={styles.actionSheetContent}>
-            <Text style={styles.actionSheetTitle}>{selectedContact.personName}</Text>
-            <Text style={styles.actionSheetSubtitle}>{selectedContact.companyName}</Text>
-            
-            <View style={styles.actionButtons}>
-              <TouchableOpacity style={styles.actionButton} onPress={() => handleAction('call')}>
-                <Text style={styles.actionButtonText}>📞 Call</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.actionButton} onPress={() => handleAction('whatsapp')}>
-                <Text style={styles.actionButtonText}>💬 WhatsApp</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.actionButton} onPress={() => handleAction('email')}>
-                <Text style={styles.actionButtonText}>✉️ Email</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.actionButton} onPress={() => handleAction('maps')}>
-                <Text style={styles.actionButtonText}>📍 Maps</Text>
-              </TouchableOpacity>
-            </View>
-            
-            <TouchableOpacity style={styles.cancelButton} onPress={() => setShowActionSheet(false)}>
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
     </View>
   );
 }
@@ -196,196 +331,197 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B0F17',
   },
   header: {
-    padding: 20,
-    paddingTop: 48,
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+  },
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+    fontSize: 24,
+    fontWeight: '800',
+    letterSpacing: -0.5,
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: '#8E8E93',
+    fontSize: 12,
     marginTop: 4,
   },
   searchContainer: {
     paddingHorizontal: 16,
-    marginBottom: 16,
+    marginTop: 10,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 18,
+    gap: 10,
   },
   searchInput: {
-    backgroundColor: '#1A1F2E',
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '500',
+    paddingVertical: 0,
+  },
+  suggestionWrap: {
+    marginTop: 8,
+  },
+  suggestionList: {
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  suggestionChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#2A2F3E',
+  },
+  suggestionChipText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  actionCard: {
+    marginHorizontal: 16,
+    marginTop: 10,
+    padding: 14,
+    borderRadius: 18,
+  },
+  actionCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  actionBadgeWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  actionBadgeTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
+  executeButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  executeButtonText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#0B0F17',
+    letterSpacing: 0.5,
+  },
+  actionContactName: {
+    fontSize: 13,
+    fontWeight: '600',
+    marginTop: 6,
   },
   industryFilter: {
+    marginTop: 10,
+    marginBottom: 6,
+  },
+  filterChipList: {
     paddingHorizontal: 16,
-    marginBottom: 16,
+    gap: 8,
   },
   industryChip: {
-    backgroundColor: '#1A1F2E',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginRight: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#2A2F3E',
-  },
-  industryChipActive: {
-    backgroundColor: '#00F2FE',
-    borderColor: '#00F2FE',
   },
   industryChipText: {
-    fontSize: 14,
-    color: '#FFFFFF',
-  },
-  industryChipTextActive: {
-    color: '#0B0F17',
+    fontSize: 12,
   },
   listContent: {
     paddingHorizontal: 16,
-    paddingBottom: 20,
+    paddingTop: 6,
   },
   contactItem: {
+    marginBottom: 10,
+    padding: 14,
+    borderRadius: 18,
+  },
+  contactRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1A1F2E',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
     gap: 12,
   },
   thumbnail: {
     width: 50,
     height: 50,
-    borderRadius: 8,
-    backgroundColor: '#2A2F3E',
+    borderRadius: 14,
   },
   thumbnailPlaceholder: {
     width: 50,
     height: 50,
-    borderRadius: 8,
-    backgroundColor: '#2A2F3E',
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  avatarInitial: {
+    fontSize: 20,
+    fontWeight: '800',
   },
   contactInfo: {
     flex: 1,
   },
+  contactHeaderLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 6,
+  },
   contactName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
+    flex: 1,
+  },
+  industryBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  industryBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
   },
   contactCompany: {
-    fontSize: 14,
-    color: '#8E8E93',
-    marginTop: 4,
-  },
-  contactJobTitle: {
-    fontSize: 12,
-    color: '#8E8E93',
+    fontSize: 13,
     marginTop: 2,
   },
-  contactIndustry: {
-    fontSize: 12,
-    color: '#00F2FE',
-    backgroundColor: 'rgba(0, 242, 254, 0.1)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+  contactMeta: {
+    fontSize: 11,
+    marginTop: 2,
   },
   emptyState: {
-    padding: 40,
     alignItems: 'center',
+    paddingVertical: 50,
+  },
+  emptyIconWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 14,
   },
   emptyText: {
     fontSize: 16,
-    color: '#8E8E93',
+    fontWeight: '700',
   },
   emptyHint: {
-    fontSize: 14,
-    color: '#8E8E93',
-    marginTop: 8,
+    fontSize: 13,
+    marginTop: 4,
     textAlign: 'center',
-  },
-  fab: {
-    position: 'absolute',
-    bottom: 24,
-    right: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#00F2FE',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  fabText: {
-    fontSize: 32,
-    color: '#0B0F17',
-    fontWeight: 'bold',
-  },
-  actionSheet: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  actionSheetContent: {
-    backgroundColor: '#1A1F2E',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    paddingBottom: 40,
-  },
-  actionSheetTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 4,
-  },
-  actionSheetSubtitle: {
-    fontSize: 16,
-    color: '#8E8E93',
-    marginBottom: 20,
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: 16,
-  },
-  actionButton: {
-    flex: 1,
-    minWidth: '45%',
-    backgroundColor: '#00F2FE',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  actionButtonText: {
-    color: '#0B0F17',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  cancelButton: {
-    backgroundColor: '#2A2F3E',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

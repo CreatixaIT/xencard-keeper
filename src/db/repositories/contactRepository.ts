@@ -108,12 +108,18 @@ export async function updateContact(
   if (updates.jobTitle !== undefined) dbUpdates.job_title = updates.jobTitle;
   if (updates.email !== undefined) dbUpdates.email = updates.email;
   if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
+  if (updates.alternatePhone !== undefined) dbUpdates.alternate_phone = updates.alternatePhone;
   if (updates.whatsappNumber !== undefined) dbUpdates.whatsapp_number = updates.whatsappNumber;
   if (updates.address !== undefined) dbUpdates.address = updates.address;
+  if (updates.city !== undefined) dbUpdates.city = updates.city;
+  if (updates.country !== undefined) dbUpdates.country = updates.country;
   if (updates.website !== undefined) dbUpdates.website = updates.website;
   if (updates.industry !== undefined) dbUpdates.industry = updates.industry;
+  if (updates.notes !== undefined) dbUpdates.notes = updates.notes;
   if (updates.rawOcrText !== undefined) dbUpdates.raw_ocr_text = updates.rawOcrText;
   if (updates.cardImageUri !== undefined) dbUpdates.card_image_uri = updates.cardImageUri;
+  if (updates.backImageUri !== undefined) dbUpdates.back_image_uri = updates.backImageUri;
+  if (updates.thumbnailUri !== undefined) dbUpdates.thumbnail_uri = updates.thumbnailUri;
   
   await db
     .update(contacts)
@@ -133,7 +139,7 @@ export async function searchContacts(query: string): Promise<VisitingCard[]> {
     return getContacts();
   }
 
-  const searchTerm = `%${query.toLowerCase()}%`;
+  const searchTerm = `%${query.toLowerCase().trim()}%`;
   const result = await db
     .select()
     .from(contacts)
@@ -144,6 +150,12 @@ export async function searchContacts(query: string): Promise<VisitingCard[]> {
         like(contacts.job_title, searchTerm),
         like(contacts.email, searchTerm),
         like(contacts.phone, searchTerm),
+        like(contacts.alternate_phone, searchTerm),
+        like(contacts.whatsapp_number, searchTerm),
+        like(contacts.city, searchTerm),
+        like(contacts.country, searchTerm),
+        like(contacts.address, searchTerm),
+        like(contacts.notes, searchTerm),
         like(contacts.industry, searchTerm)
       )
     )

@@ -5,7 +5,7 @@ import { useTheme } from '../../src/contexts/ThemeContext';
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
 
   return (
     <Tabs
@@ -14,18 +14,28 @@ export default function TabLayout() {
         tabBarInactiveTintColor: colors.textSecondary,
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: colors.background,
-          borderTopWidth: 1,
-          borderTopColor: colors.border,
-          elevation: 0,
-          shadowOpacity: 0,
-          paddingBottom: Math.max(insets.bottom, 8),
+          position: 'absolute',
+          left: 16,
+          right: 16,
+          bottom: Math.max(insets.bottom, 12),
+          height: 66,
+          borderRadius: 26,
+          backgroundColor: isDark ? 'rgba(16, 22, 38, 0.88)' : 'rgba(255, 255, 255, 0.92)',
+          borderTopWidth: 0,
+          borderWidth: 1.5,
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)',
+          elevation: 12,
+          shadowColor: colors.glowCyan,
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: isDark ? 0.28 : 0.12,
+          shadowRadius: 18,
+          paddingBottom: 8,
           paddingTop: 8,
-          height: 60 + Math.max(insets.bottom, 8),
         },
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '600',
+          fontSize: 11,
+          fontWeight: '700',
+          letterSpacing: 0.2,
         },
       }}
     >
@@ -33,26 +43,26 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "home" : "home-outline"} size={22} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="cards"
         options={{
-          title: 'Cards',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="albums" size={size} color={color} />
+          title: 'Vault',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "file-tray-full" : "file-tray-full-outline"} size={22} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="search"
         options={{
-          title: 'Search',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="search" size={size} color={color} />
+          title: 'Xeni Search',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "sparkles" : "search-outline"} size={22} color={color} />
           ),
         }}
       />
@@ -60,8 +70,8 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "person-circle" : "person-circle-outline"} size={22} color={color} />
           ),
         }}
       />

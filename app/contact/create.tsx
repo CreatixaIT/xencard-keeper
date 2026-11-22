@@ -3,12 +3,14 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import ContactForm from '../../src/components/ContactForm';
 import { createContact, updateContact } from '../../src/db/repositories/contactRepository';
 import { useContactStore } from '../../src/stores/contactStore';
+import { useTheme } from '../../src/contexts/ThemeContext';
 import type { VisitingCard } from '../../src/types';
 
 export default function CreateContactScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { refreshStats } = useContactStore();
+  const { colors } = useTheme();
   const isEditing = !!id;
 
   const handleSave = async (contact: Omit<VisitingCard, 'id' | 'createdTimestamp'>) => {
@@ -33,7 +35,7 @@ export default function CreateContactScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#F2F2F7' }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ContactForm 
         onSave={handleSave} 
         onCancel={handleCancel}

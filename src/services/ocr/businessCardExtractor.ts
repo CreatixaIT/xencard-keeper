@@ -1,4 +1,4 @@
-import type { OcrDocument, OcrLine, BusinessCardData, FieldExtraction } from './ocrEngine';
+import type { OcrDocument, OcrLine, BusinessCardData } from './ocrEngine';
 import type { Industry } from '../../types';
 
 /**
@@ -556,7 +556,6 @@ export class BusinessCardExtractor {
       // Extract all phone numbers from this line
       const phones = this.findAllPhonesInString(text);
       if (phones.length > 0) {
-        let isOnlyPhones = true;
         for (const phone of phones) {
           if (!data.phone) {
             data.phone = { value: phone, confidence: 0.95, source: 'ocr', evidence: [`line ${i}`] };
@@ -568,7 +567,7 @@ export class BusinessCardExtractor {
         // Check if there's significant other text
         let remaining = text;
         phones.forEach(p => { remaining = remaining.replace(p, ''); });
-        remaining = remaining.replace(/[\s,:;|\/-]/g, '').trim();
+        remaining = remaining.replace(/[\s,:;|/-]/g, '').trim();
         if (remaining.length < 5) {
           used.add(i);
         }

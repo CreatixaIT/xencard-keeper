@@ -84,19 +84,24 @@ class SharingService {
   }
 
   private generateVCard(data: any): string {
+    const name = data.personName || data.fullName || '';
     const lines = [
       'BEGIN:VCARD',
       'VERSION:3.0',
-      `FN:${data.fullName || ''}`,
-      `ORG:${data.companyName || ''}`,
-      `TITLE:${data.designation || data.jobTitle || ''}`,
-      `TEL:${data.phone || ''}`,
-      `TEL;TYPE=CELL:${data.whatsappNumber || ''}`,
-      `EMAIL:${data.email || ''}`,
-      `URL:${data.website || ''}`,
-      `ADR:;;${data.address || ''};;${data.city || ''};;${data.country || ''}`,
+      `FN:${name}`,
+      data.companyName || data.company ? `ORG:${data.companyName || data.company}` : '',
+      data.jobTitle || data.designation ? `TITLE:${data.jobTitle || data.designation}` : '',
+      data.phone ? `TEL;TYPE=WORK,VOICE:${data.phone}` : '',
+      data.alternatePhone ? `TEL;TYPE=HOME,VOICE:${data.alternatePhone}` : '',
+      data.whatsappNumber ? `TEL;TYPE=CELL:${data.whatsappNumber}` : '',
+      data.email ? `EMAIL;TYPE=PREF,INTERNET:${data.email}` : '',
+      data.website ? `URL:${data.website}` : '',
+      data.address || data.city || data.country
+        ? `ADR;TYPE=WORK:;;${data.address || ''};${data.city || ''};;${data.country || ''}`
+        : '',
+      data.notes ? `NOTE:${data.notes}` : '',
       'END:VCARD'
-    ];
+    ].filter(Boolean);
     
     return lines.join('\n');
   }

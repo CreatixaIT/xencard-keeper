@@ -6,9 +6,16 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system/legacy';
 import { createContact } from '../../src/db/repositories/contactRepository';
 import { BusinessCardData, FieldExtraction } from '../../src/services/ocr/ocrEngine';
+import { useTheme } from '../../src/contexts/ThemeContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { GlassCard } from '../../src/components/glass/GlassCard';
 import { Industry } from '../../src/types';
 
+const INDUSTRIES: Industry[] = ['Technology', 'Finance', 'Automotive', 'Healthcare', 'Real Estate', 'Other'];
+
 export default function ScanConfirmScreen() {
+  const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   const params = useLocalSearchParams();
   const frontImageUri = params.frontImageUri as string;
   const backImageUri = params.backImageUri as string;
@@ -96,8 +103,8 @@ export default function ScanConfirmScreen() {
         thumbnailUri: thumbnailUri || frontFileUri,
       });
 
-      Alert.alert('Success', 'Business card saved successfully', [
-        { text: 'OK', onPress: () => router.replace('/(tabs)') }
+      Alert.alert('Success', 'Business card verified and saved to your vault', [
+        { text: 'View Vault', onPress: () => router.replace('/(tabs)') }
       ]);
     } catch (error) {
       console.error('Save error:', error);
@@ -120,196 +127,242 @@ export default function ScanConfirmScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={[styles.contentContainer, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 40 }]}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#00F2FE" />
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={[styles.backButton, { backgroundColor: colors.glassCardSubtle, borderColor: colors.glassBorder }]}
+        >
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Edit Card Details</Text>
-        <View style={styles.placeholder} />
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Verify Extracted Card</Text>
+        <TouchableOpacity
+          style={[styles.saveHeaderBtn, { backgroundColor: colors.accent }]}
+          onPress={handleSave}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color="#0B0F17" />
+          ) : (
+            <Text style={styles.saveHeaderBtnText}>Save</Text>
+          )}
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.imageSection}>
-        <Text style={styles.imageLabel}>FRONT</Text>
-        <Image source={{ uri: frontImageUri }} style={styles.cardImage} />
-      </View>
-
-      {backImageUri && (
-        <View style={styles.imageSection}>
-          <Text style={styles.imageLabel}>BACK</Text>
-          <Image source={{ uri: backImageUri }} style={styles.cardImage} />
+      {/* Scanned Images Preview */}
+      <View style={styles.imagesRow}>
+        <View style={styles.imageCardWrapper}>
+          <Text style={[styles.imageLabel, { color: colors.textSecondary }]}>FRONT SIDE</Text>
+          <Image source={{ uri: frontImageUri }} style={styles.previewImage} resizeMode="cover" />
         </View>
-      )}
 
-      <View style={styles.form}>
-        <Text style={styles.sectionTitle}>Contact Information</Text>
+        {backImageUri ? (
+          <View style={styles.imageCardWrapper}>
+            <Text style={[styles.imageLabel, { color: colors.textSecondary }]}>BACK SIDE</Text>
+            <Image source={{ uri: backImageUri }} style={styles.previewImage} resizeMode="cover" />
+          </View>
+        ) : null}
+      </View>
+
+      {/* Form Fields */}
+      <GlassCard variant="glow" style={styles.formSection}>
+        <Text style={[styles.sectionTitle, { color: colors.accent }]}>Primary Identity</Text>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Full Name *</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Full Name *</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.input, color: colors.text, borderColor: colors.border }]}
             value={formData.fullName}
             onChangeText={(text) => updateField('fullName', text)}
-            placeholder="Enter full name"
-            placeholderTextColor="#8E8E93"
+            placeholder="Contact Name"
+            placeholderTextColor={colors.textSecondary}
           />
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Designation</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Designation / Job Title</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.input, color: colors.text, borderColor: colors.border }]}
             value={formData.designation}
             onChangeText={(text) => updateField('designation', text)}
-            placeholder="Job title"
-            placeholderTextColor="#8E8E93"
+            placeholder="e.g. Managing Director"
+            placeholderTextColor={colors.textSecondary}
           />
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Company *</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Company *</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.input, color: colors.text, borderColor: colors.border }]}
             value={formData.company}
             onChangeText={(text) => updateField('company', text)}
-            placeholder="Company name"
-            placeholderTextColor="#8E8E93"
+            placeholder="Company or Organization"
+            placeholderTextColor={colors.textSecondary}
           />
         </View>
 
-        <Text style={styles.sectionTitle}>Contact Details</Text>
+        <View style={styles.field}>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Industry</Text>
+          <View style={styles.industryGrid}>
+            {INDUSTRIES.map((ind) => {
+              const active = formData.industry === ind;
+              return (
+                <TouchableOpacity
+                  key={ind}
+                  style={[
+                    styles.industryChip,
+                    {
+                      backgroundColor: active ? colors.accent : colors.glassCardSubtle,
+                      borderColor: active ? colors.accent : colors.border,
+                    },
+                  ]}
+                  onPress={() => updateField('industry', ind)}
+                >
+                  <Text style={[styles.industryChipText, { color: active ? '#0B0F17' : colors.textSecondary, fontWeight: active ? '700' : '500' }]}>
+                    {ind}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+      </GlassCard>
+
+      <GlassCard variant="default" style={styles.formSection}>
+        <Text style={[styles.sectionTitle, { color: colors.accent }]}>Contact Channels</Text>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Phone</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Primary Phone</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.input, color: colors.text, borderColor: colors.border }]}
             value={formData.phone}
             onChangeText={(text) => updateField('phone', text)}
-            placeholder="+880 1XXXXXXXXX"
-            placeholderTextColor="#8E8E93"
+            placeholder="+1 234 567 890"
+            placeholderTextColor={colors.textSecondary}
             keyboardType="phone-pad"
           />
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Alternate Phone</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Alternate Phone</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.input, color: colors.text, borderColor: colors.border }]}
             value={formData.alternatePhone}
             onChangeText={(text) => updateField('alternatePhone', text)}
-            placeholder="Alternate phone"
-            placeholderTextColor="#8E8E93"
+            placeholder="+1 987 654 321"
+            placeholderTextColor={colors.textSecondary}
             keyboardType="phone-pad"
           />
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>WhatsApp</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>WhatsApp Number</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.input, color: colors.text, borderColor: colors.border }]}
             value={formData.whatsappNumber}
             onChangeText={(text) => updateField('whatsappNumber', text)}
-            placeholder="WhatsApp number"
-            placeholderTextColor="#8E8E93"
+            placeholder="WhatsApp phone"
+            placeholderTextColor={colors.textSecondary}
             keyboardType="phone-pad"
           />
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Email</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Email</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.input, color: colors.text, borderColor: colors.border }]}
             value={formData.email}
             onChangeText={(text) => updateField('email', text)}
             placeholder="email@example.com"
-            placeholderTextColor="#8E8E93"
+            placeholderTextColor={colors.textSecondary}
             keyboardType="email-address"
             autoCapitalize="none"
           />
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Website</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Website</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.input, color: colors.text, borderColor: colors.border }]}
             value={formData.website}
             onChangeText={(text) => updateField('website', text)}
             placeholder="https://example.com"
-            placeholderTextColor="#8E8E93"
+            placeholderTextColor={colors.textSecondary}
             keyboardType="url"
             autoCapitalize="none"
           />
         </View>
+      </GlassCard>
+
+      <GlassCard variant="default" style={styles.formSection}>
+        <Text style={[styles.sectionTitle, { color: colors.accent }]}>Address & Notes</Text>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Address</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Street Address</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.input, color: colors.text, borderColor: colors.border }]}
             value={formData.address}
             onChangeText={(text) => updateField('address', text)}
             placeholder="Street address"
-            placeholderTextColor="#8E8E93"
+            placeholderTextColor={colors.textSecondary}
           />
         </View>
 
-        <View style={styles.field}>
-          <Text style={styles.label}>City</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.city}
-            onChangeText={(text) => updateField('city', text)}
-            placeholder="City"
-            placeholderTextColor="#8E8E93"
-          />
+        <View style={styles.rowFields}>
+          <View style={[styles.field, { flex: 1 }]}>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>City</Text>
+            <TextInput
+              style={[styles.input, { backgroundColor: colors.input, color: colors.text, borderColor: colors.border }]}
+              value={formData.city}
+              onChangeText={(text) => updateField('city', text)}
+              placeholder="City"
+              placeholderTextColor={colors.textSecondary}
+            />
+          </View>
+
+          <View style={[styles.field, { flex: 1 }]}>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>Country</Text>
+            <TextInput
+              style={[styles.input, { backgroundColor: colors.input, color: colors.text, borderColor: colors.border }]}
+              value={formData.country}
+              onChangeText={(text) => updateField('country', text)}
+              placeholder="Country"
+              placeholderTextColor={colors.textSecondary}
+            />
+          </View>
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Country</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Notes</Text>
           <TextInput
-            style={styles.input}
-            value={formData.country}
-            onChangeText={(text) => updateField('country', text)}
-            placeholder="Country"
-            placeholderTextColor="#8E8E93"
-          />
-        </View>
-
-        <View style={styles.field}>
-          <Text style={styles.label}>Industry *</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.industry}
-            onChangeText={(text) => updateField('industry', text)}
-            placeholder="e.g., Technology, Finance, Healthcare"
-            placeholderTextColor="#8E8E93"
-          />
-        </View>
-
-        <View style={styles.field}>
-          <Text style={styles.label}>Notes</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
+            style={[styles.input, styles.textArea, { backgroundColor: colors.input, color: colors.text, borderColor: colors.border }]}
             value={formData.notes}
             onChangeText={(text) => updateField('notes', text)}
             placeholder="Additional notes"
-            placeholderTextColor="#8E8E93"
+            placeholderTextColor={colors.textSecondary}
             multiline
-            numberOfLines={4}
+            numberOfLines={3}
           />
         </View>
+      </GlassCard>
 
-        <TouchableOpacity
-          style={[styles.saveButton, loading && styles.buttonDisabled]}
-          onPress={handleSave}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#0B0F17" />
-          ) : (
-            <Text style={styles.saveButtonText}>Save Business Card</Text>
-          )}
-        </TouchableOpacity>
-      </View>
+      {/* Save Button */}
+      <TouchableOpacity
+        style={[styles.saveButton, { backgroundColor: colors.accent }, loading && styles.buttonDisabled]}
+        onPress={handleSave}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#0B0F17" />
+        ) : (
+          <Text style={styles.saveButtonText}>Save Card to Vault</Text>
+        )}
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -317,86 +370,121 @@ export default function ScanConfirmScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B0F17',
+  },
+  contentContainer: {
+    paddingHorizontal: 16,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
-    paddingTop: 48,
+    marginBottom: 16,
   },
   backButton: {
-    padding: 8,
+    width: 38,
+    height: 38,
+    borderRadius: 13,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+    fontWeight: '800',
   },
-  placeholder: {
-    width: 40,
+  saveHeaderBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
   },
-  cardImage: {
-    width: '100%',
-    height: 200,
-    resizeMode: 'contain',
-    margin: 16,
+  saveHeaderBtnText: {
+    color: '#0B0F17',
+    fontSize: 13,
+    fontWeight: '800',
   },
-  imageSection: {
-    margin: 16,
+  imagesRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 14,
+  },
+  imageCardWrapper: {
+    flex: 1,
+    borderRadius: 18,
+    overflow: 'hidden',
   },
   imageLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#8E8E93',
-    marginBottom: 8,
-    marginLeft: 16,
+    fontSize: 11,
+    fontWeight: '700',
+    marginBottom: 6,
+    letterSpacing: 0.5,
   },
-  form: {
+  previewImage: {
+    width: '100%',
+    height: 120,
+    borderRadius: 14,
+    backgroundColor: '#0F172A',
+  },
+  formSection: {
     padding: 16,
-    gap: 16,
+    borderRadius: 20,
+    marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#00F2FE',
-    marginTop: 8,
+    fontSize: 15,
+    fontWeight: '800',
+    marginBottom: 12,
   },
   field: {
-    gap: 8,
+    marginBottom: 12,
+  },
+  rowFields: {
+    flexDirection: 'row',
+    gap: 10,
   },
   label: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
-    color: '#FFFFFF',
+    marginBottom: 6,
   },
   input: {
-    backgroundColor: '#1A1F2E',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: '#FFFFFF',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 14,
     borderWidth: 1,
-    borderColor: '#2A2F3E',
   },
   textArea: {
-    height: 100,
+    height: 70,
     textAlignVertical: 'top',
   },
-  saveButton: {
-    backgroundColor: '#00F2FE',
-    padding: 16,
+  industryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 4,
+  },
+  industryChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 12,
+    borderWidth: 1,
+  },
+  industryChipText: {
+    fontSize: 12,
+  },
+  saveButton: {
+    paddingVertical: 16,
+    borderRadius: 18,
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 8,
+    marginBottom: 24,
   },
   buttonDisabled: {
-    backgroundColor: '#8E8E93',
+    opacity: 0.6,
   },
   saveButtonText: {
     color: '#0B0F17',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '800',
   },
 });

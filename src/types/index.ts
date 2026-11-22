@@ -97,18 +97,22 @@ export type XeniIntent =
   | {
       type: "CALL";
       contactId: string;
+      targetName?: string;
     }
   | {
       type: "WHATSAPP";
       contactId: string;
+      targetName?: string;
     }
   | {
       type: "EMAIL";
       contactId: string;
+      targetName?: string;
     }
   | {
       type: "MAPS";
       contactId: string;
+      targetName?: string;
     }
   | {
       type: "UNKNOWN";

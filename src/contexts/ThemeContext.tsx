@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type ThemeMode = 'dark' | 'light' | 'system';
 
-interface ThemeColors {
+export interface ThemeColors {
   background: string;
   card: string;
   text: string;
@@ -16,34 +16,62 @@ interface ThemeColors {
   success: string;
   warning: string;
   error: string;
+  // Glassmorphism design tokens
+  glassCard: string;
+  glassCardSubtle: string;
+  glassBorder: string;
+  glassBorderGlow: string;
+  glowCyan: string;
+  glowBlue: string;
+  glowPurple: string;
+  surfaceElevated: string;
+  surfaceMuted: string;
 }
 
 const darkColors: ThemeColors = {
   background: '#0B0F17',
-  card: '#1A1F2E',
+  card: '#161C2B',
   text: '#FFFFFF',
-  textSecondary: '#8E8E93',
+  textSecondary: '#94A3B8',
   accent: '#00F2FE',
   accentSecondary: '#4FACFE',
-  border: '#2A2F3E',
-  input: '#1A1F2E',
-  success: '#4CAF50',
-  warning: '#FF9800',
-  error: '#FF6B6B',
+  border: '#232B3E',
+  input: '#151B28',
+  success: '#10B981',
+  warning: '#F59E0B',
+  error: '#EF4444',
+  glassCard: 'rgba(22, 28, 43, 0.75)',
+  glassCardSubtle: 'rgba(26, 33, 50, 0.55)',
+  glassBorder: 'rgba(255, 255, 255, 0.10)',
+  glassBorderGlow: 'rgba(0, 242, 254, 0.28)',
+  glowCyan: '#00F2FE',
+  glowBlue: '#4FACFE',
+  glowPurple: '#8B5CF6',
+  surfaceElevated: '#1A2234',
+  surfaceMuted: 'rgba(15, 23, 42, 0.85)',
 };
 
 const lightColors: ThemeColors = {
-  background: '#FFFFFF',
-  card: '#F5F5F5',
-  text: '#1A1F2E',
-  textSecondary: '#6B7280',
-  accent: '#00F2FE',
-  accentSecondary: '#4FACFE',
-  border: '#E5E7EB',
-  input: '#F9FAFB',
-  success: '#4CAF50',
-  warning: '#FF9800',
-  error: '#FF6B6B',
+  background: '#F8FAFC',
+  card: '#FFFFFF',
+  text: '#0F172A',
+  textSecondary: '#64748B',
+  accent: '#0284C7',
+  accentSecondary: '#2563EB',
+  border: '#E2E8F0',
+  input: '#F1F5F9',
+  success: '#059669',
+  warning: '#D97706',
+  error: '#DC2626',
+  glassCard: 'rgba(255, 255, 255, 0.88)',
+  glassCardSubtle: 'rgba(248, 250, 252, 0.70)',
+  glassBorder: 'rgba(0, 0, 0, 0.08)',
+  glassBorderGlow: 'rgba(2, 132, 199, 0.25)',
+  glowCyan: '#0284C7',
+  glowBlue: '#2563EB',
+  glowPurple: '#7C3AED',
+  surfaceElevated: '#FFFFFF',
+  surfaceMuted: 'rgba(241, 245, 249, 0.85)',
 };
 
 interface ThemeContextType {

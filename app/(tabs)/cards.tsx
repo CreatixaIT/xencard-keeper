@@ -2,32 +2,61 @@ import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image, Alert, Modal } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { getContacts, deleteContact } from '../../src/db/repositories/contactRepository';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getContacts, deleteContact, filterContactsByIndustry } from '../../src/db/repositories/contactRepository';
+import { sharingService } from '../../src/services/sharing/sharingService';
 import * as Linking from 'expo-linking';
+import { useTheme } from '../../src/contexts/ThemeContext';
+import { GlassCard } from '../../src/components/glass/GlassCard';
+import type { VisitingCard, Industry } from '../../src/types';
+
+const INDUSTRIES: (Industry | 'All')[] = [
+  'All',
+  'Technology',
+  'Finance',
+  'Healthcare',
+  'Automotive',
+  'Real Estate',
+  'Other',
+];
 
 export default function CardsScreen() {
-  const [contacts, setContacts] = useState<any[]>([]);
-  const [selectedContact, setSelectedContact] = useState<any>(null);
+  const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
+  const [contacts, setContacts] = useState<VisitingCard[]>([]);
+  const [selectedIndustry, setSelectedIndustry] = useState<Industry | 'All'>('All');
+  const [sortAlphabetical, setSortAlphabetical] = useState(false);
+  const [selectedContact, setSelectedContact] = useState<VisitingCard | null>(null);
   const [showActionSheet, setShowActionSheet] = useState(false);
 
   useEffect(() => {
     loadContacts();
-  }, []);
+  }, [selectedIndustry, sortAlphabetical]);
 
   const loadContacts = async () => {
     try {
-      const allContacts = await getContacts();
-      setContacts(allContacts);
+      let list: VisitingCard[] = [];
+      if (selectedIndustry === 'All') {
+        list = await getContacts();
+      } else {
+        list = await filterContactsByIndustry(selectedIndustry);
+      }
+
+      if (sortAlphabetical) {
+        list = [...list].sort((a, b) => a.personName.localeCompare(b.personName));
+      }
+
+      setContacts(list);
     } catch (error) {
       console.error('Failed to load contacts:', error);
     }
   };
 
-  const handleContactPress = (contact: any) => {
+  const handleContactPress = (contact: VisitingCard) => {
     router.push(`/contact/${contact.id}`);
   };
 
-  const handleLongPress = (contact: any) => {
+  const handleLongPress = (contact: VisitingCard) => {
     setSelectedContact(contact);
     setShowActionSheet(true);
   };
@@ -40,10 +69,11 @@ export default function CardsScreen() {
   };
 
   const handleWhatsApp = () => {
-    if (selectedContact?.whatsappNumber) {
-      Linking.openURL(`whatsapp://send?phone=${selectedContact.whatsappNumber}`);
-    } else if (selectedContact?.phone) {
-      Linking.openURL(`whatsapp://send?phone=${selectedContact.phone}`);
+    const phone = selectedContact?.whatsappNumber || selectedContact?.phone;
+    if (phone) {
+      const clean = phone.replace(/[^0-9]/g, '');
+      const greeting = encodeURIComponent(`Hello ${selectedContact?.personName || ''}, connecting via Xencard Keeper!`);
+      Linking.openURL(`https://wa.me/${clean}?text=${greeting}`);
     }
     setShowActionSheet(false);
   };
@@ -63,15 +93,28 @@ export default function CardsScreen() {
     setShowActionSheet(false);
   };
 
+  const handleShareVCard = async () => {
+    if (selectedContact) {
+      try {
+        await sharingService.shareContactCard(selectedContact);
+      } catch (error) {
+        console.error('Share error:', error);
+      }
+    }
+    setShowActionSheet(false);
+  };
+
   const handleEdit = () => {
     setShowActionSheet(false);
-    router.push(`/contact/${selectedContact.id}`);
+    if (selectedContact) {
+      router.push(`/contact/create?id=${selectedContact.id}`);
+    }
   };
 
   const handleDelete = () => {
     Alert.alert(
-      'Delete Contact',
-      'Are you sure you want to delete this contact?',
+      'Delete Card',
+      `Permanently delete "${selectedContact?.personName || 'this contact'}" from your vault?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -89,70 +132,195 @@ export default function CardsScreen() {
     );
   };
 
-  const renderContact = ({ item }: { item: any }) => (
-    <TouchableOpacity
+  const renderContact = ({ item }: { item: VisitingCard }) => (
+    <GlassCard
+      variant="subtle"
       style={styles.contactItem}
       onPress={() => handleContactPress(item)}
-      onLongPress={() => handleLongPress(item)}
     >
-      {item.thumbnailUri ? (
-        <Image source={{ uri: item.thumbnailUri }} style={styles.thumbnail} />
-      ) : (
-        <View style={styles.thumbnailPlaceholder}>
-          <Ionicons name="person" size={24} color="#8E8E93" />
-        </View>
-      )}
-      
-      <View style={styles.contactInfo}>
-        <Text style={styles.contactName}>{item.personName}</Text>
-        <Text style={styles.contactDesignation}>{item.jobTitle}</Text>
-        <Text style={styles.contactCompany}>{item.companyName}</Text>
-        
-        <View style={styles.contactActions}>
-          {item.phone && (
-            <TouchableOpacity onPress={() => Linking.openURL(`tel:${item.phone}`)}>
-              <Ionicons name="call" size={18} color="#00F2FE" />
-            </TouchableOpacity>
-          )}
-          {item.email && (
-            <TouchableOpacity onPress={() => Linking.openURL(`mailto:${item.email}`)}>
-              <Ionicons name="mail" size={18} color="#00F2FE" />
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onLongPress={() => handleLongPress(item)}
+        style={styles.contactRow}
+      >
+        {item.thumbnailUri ? (
+          <Image source={{ uri: item.thumbnailUri }} style={styles.thumbnail} />
+        ) : (
+          <View style={[styles.thumbnailPlaceholder, { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' }]}>
+            <Text style={[styles.avatarInitial, { color: colors.accent }]}>
+              {(item.personName || 'U').charAt(0).toUpperCase()}
+            </Text>
+          </View>
+        )}
 
-      <Ionicons name="chevron-forward" size={20} color="#8E8E93" />
-    </TouchableOpacity>
+        <View style={styles.contactInfo}>
+          <View style={styles.titleRow}>
+            <Text style={[styles.contactName, { color: colors.text }]} numberOfLines={1}>
+              {item.personName}
+            </Text>
+            {item.industry ? (
+              <View style={[styles.industryBadge, { backgroundColor: `${colors.accent}18` }]}>
+                <Text style={[styles.industryBadgeText, { color: colors.accent }]}>
+                  {item.industry}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+
+          <Text style={[styles.contactDesignation, { color: colors.textSecondary }]} numberOfLines={1}>
+            {item.jobTitle ? `${item.jobTitle} • ` : ''}{item.companyName}
+          </Text>
+
+          {/* Quick Action Dock */}
+          <View style={styles.contactActions}>
+            {item.phone ? (
+              <TouchableOpacity
+                style={[styles.miniAction, { backgroundColor: 'rgba(0, 242, 254, 0.12)' }]}
+                onPress={() => Linking.openURL(`tel:${item.phone}`)}
+              >
+                <Ionicons name="call" size={14} color={colors.accent} />
+              </TouchableOpacity>
+            ) : null}
+
+            {item.whatsappNumber || item.phone ? (
+              <TouchableOpacity
+                style={[styles.miniAction, { backgroundColor: 'rgba(16, 185, 129, 0.12)' }]}
+                onPress={() => {
+                  const phone = item.whatsappNumber || item.phone;
+                  const clean = phone!.replace(/[^0-9]/g, '');
+                  Linking.openURL(`https://wa.me/${clean}`);
+                }}
+              >
+                <Ionicons name="logo-whatsapp" size={14} color="#10B981" />
+              </TouchableOpacity>
+            ) : null}
+
+            {item.email ? (
+              <TouchableOpacity
+                style={[styles.miniAction, { backgroundColor: 'rgba(56, 189, 248, 0.12)' }]}
+                onPress={() => Linking.openURL(`mailto:${item.email}`)}
+              >
+                <Ionicons name="mail" size={14} color="#38BDF8" />
+              </TouchableOpacity>
+            ) : null}
+
+            <TouchableOpacity
+              style={[styles.miniAction, { backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)' }]}
+              onPress={() => handleLongPress(item)}
+            >
+              <Ionicons name="ellipsis-horizontal" size={14} color={colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} style={{ opacity: 0.6 }} />
+      </TouchableOpacity>
+    </GlassCard>
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Business Cards</Text>
-        <Text style={styles.headerCount}>{contacts.length} cards</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+        <View>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Card Vault</Text>
+          <Text style={[styles.headerCount, { color: colors.textSecondary }]}>
+            {contacts.length} cards organized
+          </Text>
+        </View>
+
+        <View style={styles.headerButtons}>
+          <TouchableOpacity
+            style={[
+              styles.sortBtn,
+              {
+                backgroundColor: sortAlphabetical ? colors.accent : colors.glassCard,
+                borderColor: colors.glassBorder,
+              },
+            ]}
+            onPress={() => setSortAlphabetical(!sortAlphabetical)}
+          >
+            <Ionicons
+              name={sortAlphabetical ? 'text' : 'time-outline'}
+              size={18}
+              color={sortAlphabetical ? '#0B0F17' : colors.accent}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.scanFab, { backgroundColor: colors.accent }]}
+            onPress={() => router.push('/scan')}
+          >
+            <Ionicons name="scan" size={20} color="#0B0F17" />
+          </TouchableOpacity>
+        </View>
       </View>
 
+      {/* Industry Filter Chips */}
+      <View style={styles.filterScrollWrapper}>
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={INDUSTRIES}
+          keyExtractor={(item) => item}
+          contentContainerStyle={styles.filterList}
+          renderItem={({ item }) => {
+            const isActive = selectedIndustry === item;
+            return (
+              <TouchableOpacity
+                style={[
+                  styles.filterChip,
+                  {
+                    backgroundColor: isActive ? colors.accent : colors.glassCardSubtle,
+                    borderColor: isActive ? colors.accent : colors.glassBorder,
+                  },
+                ]}
+                onPress={() => setSelectedIndustry(item)}
+              >
+                <Text
+                  style={[
+                    styles.filterChipText,
+                    { color: isActive ? '#0B0F17' : colors.textSecondary, fontWeight: isActive ? '700' : '500' },
+                  ]}
+                >
+                  {item}
+                </Text>
+              </TouchableOpacity>
+            );
+          }}
+        />
+      </View>
+
+      {/* Cards List */}
       <FlatList
         data={contacts}
         renderItem={renderContact}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 95 }]}
+        showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Ionicons name="albums-outline" size={64} color="#2A2F3E" />
-            <Text style={styles.emptyText}>No business cards yet</Text>
-            <Text style={styles.emptySubtext}>Scan your first card to get started</Text>
+            <View style={[styles.emptyIconWrap, { backgroundColor: colors.glassCard }]}>
+              <Ionicons name="card-outline" size={48} color={colors.accent} />
+            </View>
+            <Text style={[styles.emptyText, { color: colors.text }]}>No Business Cards Found</Text>
+            <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>
+              {selectedIndustry === 'All'
+                ? 'Scan your first physical card or create one manually'
+                : `No cards in ${selectedIndustry} yet`}
+            </Text>
             <TouchableOpacity
-              style={styles.emptyButton}
+              style={[styles.emptyButton, { backgroundColor: colors.accent }]}
               onPress={() => router.push('/scan')}
             >
-              <Text style={styles.emptyButtonText}>Scan Card</Text>
+              <Ionicons name="scan" size={18} color="#0B0F17" />
+              <Text style={styles.emptyButtonText}>Scan First Card</Text>
             </TouchableOpacity>
           </View>
         }
       />
 
+      {/* Glassmorphic Action Sheet Modal */}
       <Modal
         visible={showActionSheet}
         transparent
@@ -164,58 +332,79 @@ export default function CardsScreen() {
           activeOpacity={1}
           onPress={() => setShowActionSheet(false)}
         >
-          <View style={styles.actionSheet}>
-            <View style={styles.actionSheetHandle} />
-            
+          <GlassCard variant="elevated" style={styles.actionSheet}>
+            <View style={[styles.actionSheetHandle, { backgroundColor: colors.border }]} />
+
             {selectedContact && (
               <>
                 <View style={styles.actionSheetHeader}>
-                  <Text style={styles.actionSheetTitle}>{selectedContact.personName}</Text>
-                  <Text style={styles.actionSheetSubtitle}>{selectedContact.companyName}</Text>
+                  <Text style={[styles.actionSheetTitle, { color: colors.text }]} numberOfLines={1}>
+                    {selectedContact.personName}
+                  </Text>
+                  <Text style={[styles.actionSheetSubtitle, { color: colors.accent }]} numberOfLines={1}>
+                    {selectedContact.companyName}
+                  </Text>
                 </View>
 
-                <View style={styles.actionSheetActions}>
+                <View style={styles.actionGrid}>
                   {selectedContact.phone && (
-                    <TouchableOpacity style={styles.actionSheetButton} onPress={handleCall}>
-                      <Ionicons name="call" size={24} color="#00F2FE" />
-                      <Text style={styles.actionSheetButtonText}>Call</Text>
+                    <TouchableOpacity style={styles.actionBtn} onPress={handleCall}>
+                      <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(0, 242, 254, 0.15)' }]}>
+                        <Ionicons name="call" size={22} color={colors.accent} />
+                      </View>
+                      <Text style={[styles.actionBtnText, { color: colors.text }]}>Call</Text>
                     </TouchableOpacity>
                   )}
 
-                  {selectedContact.whatsappNumber && (
-                    <TouchableOpacity style={styles.actionSheetButton} onPress={handleWhatsApp}>
-                      <Ionicons name="logo-whatsapp" size={24} color="#00F2FE" />
-                      <Text style={styles.actionSheetButtonText}>WhatsApp</Text>
-                    </TouchableOpacity>
-                  )}
+                  <TouchableOpacity style={styles.actionBtn} onPress={handleWhatsApp}>
+                    <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(16, 185, 129, 0.15)' }]}>
+                      <Ionicons name="logo-whatsapp" size={22} color="#10B981" />
+                    </View>
+                    <Text style={[styles.actionBtnText, { color: colors.text }]}>WhatsApp</Text>
+                  </TouchableOpacity>
 
                   {selectedContact.email && (
-                    <TouchableOpacity style={styles.actionSheetButton} onPress={handleEmail}>
-                      <Ionicons name="mail" size={24} color="#00F2FE" />
-                      <Text style={styles.actionSheetButtonText}>Email</Text>
+                    <TouchableOpacity style={styles.actionBtn} onPress={handleEmail}>
+                      <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(56, 189, 248, 0.15)' }]}>
+                        <Ionicons name="mail" size={22} color="#38BDF8" />
+                      </View>
+                      <Text style={[styles.actionBtnText, { color: colors.text }]}>Email</Text>
                     </TouchableOpacity>
                   )}
 
                   {selectedContact.address && (
-                    <TouchableOpacity style={styles.actionSheetButton} onPress={handleMaps}>
-                      <Ionicons name="map" size={24} color="#00F2FE" />
-                      <Text style={styles.actionSheetButtonText}>Maps</Text>
+                    <TouchableOpacity style={styles.actionBtn} onPress={handleMaps}>
+                      <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(168, 85, 247, 0.15)' }]}>
+                        <Ionicons name="map" size={22} color="#A855F7" />
+                      </View>
+                      <Text style={[styles.actionBtnText, { color: colors.text }]}>Maps</Text>
                     </TouchableOpacity>
                   )}
 
-                  <TouchableOpacity style={styles.actionSheetButton} onPress={handleEdit}>
-                    <Ionicons name="create" size={24} color="#4FACFE" />
-                    <Text style={styles.actionSheetButtonText}>Edit</Text>
+                  <TouchableOpacity style={styles.actionBtn} onPress={handleShareVCard}>
+                    <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(245, 158, 11, 0.15)' }]}>
+                      <Ionicons name="share-social" size={22} color="#F59E0B" />
+                    </View>
+                    <Text style={[styles.actionBtnText, { color: colors.text }]}>Save/Share</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={styles.actionSheetButton} onPress={handleDelete}>
-                    <Ionicons name="trash" size={24} color="#FF6B6B" />
-                    <Text style={[styles.actionSheetButtonText, styles.deleteText]}>Delete</Text>
+                  <TouchableOpacity style={styles.actionBtn} onPress={handleEdit}>
+                    <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(99, 102, 241, 0.15)' }]}>
+                      <Ionicons name="create" size={22} color="#6366F1" />
+                    </View>
+                    <Text style={[styles.actionBtnText, { color: colors.text }]}>Edit</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.actionBtn} onPress={handleDelete}>
+                    <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(239, 68, 68, 0.15)' }]}>
+                      <Ionicons name="trash" size={22} color="#EF4444" />
+                    </View>
+                    <Text style={[styles.actionBtnText, { color: '#EF4444' }]}>Delete</Text>
                   </TouchableOpacity>
                 </View>
               </>
             )}
-          </View>
+          </GlassCard>
         </TouchableOpacity>
       </Modal>
     </View>
@@ -225,153 +414,218 @@ export default function CardsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B0F17',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
-    paddingTop: 48,
+    paddingHorizontal: 20,
+    paddingBottom: 10,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+    fontSize: 26,
+    fontWeight: '800',
+    letterSpacing: -0.5,
   },
   headerCount: {
-    fontSize: 16,
-    color: '#8E8E93',
+    fontSize: 13,
+    fontWeight: '500',
+    marginTop: 2,
   },
-  listContent: {
-    padding: 16,
-  },
-  contactItem: {
+  headerButtons: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1A1F2E',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
+    gap: 8,
+  },
+  sortBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  scanFab: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  filterScrollWrapper: {
+    marginVertical: 8,
+  },
+  filterList: {
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  filterChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  filterChipText: {
+    fontSize: 12,
+  },
+  listContent: {
+    paddingHorizontal: 16,
+    paddingTop: 6,
+  },
+  contactItem: {
+    marginBottom: 10,
+    padding: 14,
+    borderRadius: 20,
+  },
+  contactRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 12,
   },
   thumbnail: {
-    width: 60,
-    height: 60,
-    borderRadius: 12,
-    backgroundColor: '#2A2F3E',
+    width: 54,
+    height: 54,
+    borderRadius: 14,
   },
   thumbnailPlaceholder: {
-    width: 60,
-    height: 60,
-    borderRadius: 12,
-    backgroundColor: '#2A2F3E',
+    width: 54,
+    height: 54,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  avatarInitial: {
+    fontSize: 22,
+    fontWeight: '800',
   },
   contactInfo: {
     flex: 1,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
   contactName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 4,
+    fontSize: 16,
+    fontWeight: '700',
+    flex: 1,
+  },
+  industryBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  industryBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
   },
   contactDesignation: {
-    fontSize: 14,
-    color: '#8E8E93',
-    marginBottom: 4,
-  },
-  contactCompany: {
-    fontSize: 14,
-    color: '#4FACFE',
+    fontSize: 13,
+    marginTop: 2,
     marginBottom: 8,
   },
   contactActions: {
     flexDirection: 'row',
-    gap: 16,
+    gap: 8,
   },
-  emptyState: {
-    flex: 1,
+  miniAction: {
+    width: 30,
+    height: 30,
+    borderRadius: 9,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 24,
+  },
+  emptyIconWrap: {
+    width: 80,
+    height: 80,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   emptyText: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginTop: 16,
+    fontWeight: '800',
   },
   emptySubtext: {
-    fontSize: 14,
-    color: '#8E8E93',
-    marginTop: 8,
-    marginBottom: 24,
+    fontSize: 13,
+    textAlign: 'center',
+    marginTop: 6,
+    marginBottom: 20,
   },
   emptyButton: {
-    backgroundColor: '#00F2FE',
-    paddingHorizontal: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 22,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 14,
   },
   emptyButtonText: {
     color: '#0B0F17',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontWeight: '700',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
     justifyContent: 'flex-end',
   },
   actionSheet: {
-    backgroundColor: '#1A1F2E',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingBottom: 32,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingBottom: 40,
+    paddingHorizontal: 20,
   },
   actionSheetHandle: {
-    width: 40,
+    width: 38,
     height: 4,
-    backgroundColor: '#2A2F3E',
     alignSelf: 'center',
-    marginTop: 12,
+    marginTop: 10,
     marginBottom: 16,
     borderRadius: 2,
   },
   actionSheetHeader: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
   },
   actionSheetTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+    fontWeight: '800',
   },
   actionSheetSubtitle: {
     fontSize: 14,
-    color: '#8E8E93',
-    marginTop: 4,
+    fontWeight: '600',
+    marginTop: 2,
   },
-  actionSheetActions: {
+  actionGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-around',
-    paddingHorizontal: 16,
+    gap: 12,
   },
-  actionSheetButton: {
+  actionBtn: {
     alignItems: 'center',
-    width: 80,
-    marginBottom: 20,
+    width: 74,
+    gap: 6,
+    marginBottom: 10,
   },
-  actionSheetButtonText: {
+  actionIconWrap: {
+    width: 50,
+    height: 50,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  actionBtnText: {
     fontSize: 12,
-    color: '#FFFFFF',
-    marginTop: 8,
-  },
-  deleteText: {
-    color: '#FF6B6B',
+    fontWeight: '600',
   },
 });

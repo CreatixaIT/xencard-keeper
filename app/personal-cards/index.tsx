@@ -12,6 +12,8 @@ import {
 import { sharingService } from '../../src/services/sharing/sharingService';
 import QRCode from 'react-native-qrcode-svg';
 import { qrService } from '../../src/services/qr/qrService';
+import { GlassCard } from '../../src/components/glass/GlassCard';
+import { ExecutiveVisitingCard } from '../../src/components/glass/ExecutiveVisitingCard';
 
 export default function PersonalCardsScreen() {
   const insets = useSafeAreaInsets();
@@ -40,7 +42,7 @@ export default function PersonalCardsScreen() {
     try {
       await setActivePersonalCard(id);
       await loadCards();
-      Alert.alert('Success', 'Card set as active');
+      Alert.alert('Success', 'Card set as primary active visiting card');
     } catch {
       Alert.alert('Error', 'Failed to set active card');
     }
@@ -91,116 +93,127 @@ export default function PersonalCardsScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Text style={[styles.loadingText, { color: colors.text }]}>Loading...</Text>
+      <View style={[styles.container, styles.center, { backgroundColor: colors.background }]}>
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading Digital Wallet...</Text>
       </View>
     );
   }
 
   return (
     <>
-      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+      <View style={[styles.header, { paddingTop: insets.top + 16, backgroundColor: colors.background }]}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={[styles.headerBtn, { backgroundColor: colors.glassCardSubtle, borderColor: colors.glassBorder }]}
+        >
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>My Visiting Cards</Text>
-        <TouchableOpacity onPress={handleAddCard} style={styles.addButton}>
-          <Ionicons name="add" size={24} color={colors.accent} />
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Digital Card Wallet</Text>
+        <TouchableOpacity
+          onPress={handleAddCard}
+          style={[styles.headerBtn, { backgroundColor: colors.accent, borderColor: colors.accent }]}
+        >
+          <Ionicons name="add" size={22} color="#0B0F17" />
         </TouchableOpacity>
       </View>
 
       <ScrollView 
         style={[styles.container, { backgroundColor: colors.background }]} 
-        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 40 }}
+        showsVerticalScrollIndicator={false}
       >
         {cards.length === 0 ? (
           <View style={styles.emptyState}>
-            <Ionicons name="card-outline" size={64} color={colors.textSecondary} />
-            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No visiting cards yet</Text>
+            <View style={[styles.emptyIconWrap, { backgroundColor: colors.glassCard }]}>
+              <Ionicons name="wallet-outline" size={54} color={colors.accent} />
+            </View>
+            <Text style={[styles.emptyText, { color: colors.text }]}>No Digital Cards Yet</Text>
             <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>
-              Create your first visiting card to get started
+              Create your executive business card with holographic QR and tap-to-share
             </Text>
             <TouchableOpacity 
               style={[styles.createFirstButton, { backgroundColor: colors.accent }]} 
               onPress={handleAddCard}
             >
+              <Ionicons name="add-circle-outline" size={20} color="#0B0F17" />
               <Text style={styles.createFirstButtonText}>Create Your First Card</Text>
             </TouchableOpacity>
           </View>
         ) : (
           cards.map((card) => (
-            <View
-              key={card.id}
-              style={[
-                styles.cardContainer,
-                { 
-                  backgroundColor: colors.card,
-                  borderColor: card.isActive ? colors.accent : colors.border,
-                  borderWidth: card.isActive ? 2 : 1,
-                }
-              ]}
-            >
-              <View style={styles.cardHeader}>
-                <View style={styles.cardInfo}>
-                  <Text style={[styles.cardName, { color: colors.text }]}>{card.fullName}</Text>
-                  <Text style={[styles.cardCompany, { color: colors.textSecondary }]}>{card.companyName}</Text>
-                  <Text style={[styles.cardDesignation, { color: colors.textSecondary }]}>{card.designation}</Text>
-                </View>
-                {card.isActive && (
-                  <View style={[styles.activeBadge, { backgroundColor: `${colors.accent}20` }]}>
-                    <Text style={[styles.activeText, { color: colors.accent }]}>Active</Text>
+            <View key={card.id} style={styles.cardWrapper}>
+              {/* Virtual Holographic Card Preview */}
+              <ExecutiveVisitingCard
+                card={card}
+                onShare={() => handleShare(card)}
+                onEdit={() => handleEditCard(card.id)}
+              />
+
+              {/* Card Meta & Control Bar */}
+              <GlassCard variant="subtle" style={styles.cardControlsCard}>
+                <View style={styles.controlHeaderRow}>
+                  <View style={styles.activeStatusRow}>
+                    <View
+                      style={[
+                        styles.statusDot,
+                        { backgroundColor: card.isActive ? colors.success : colors.textSecondary },
+                      ]}
+                    />
+                    <Text style={[styles.statusLabel, { color: card.isActive ? colors.success : colors.textSecondary }]}>
+                      {card.isActive ? 'Primary Active Visiting Card' : 'Alternative Card Profile'}
+                    </Text>
                   </View>
-                )}
-              </View>
 
-              <View style={styles.cardActions}>
-                {!card.isActive && (
-                  <TouchableOpacity 
-                    style={[styles.actionButton, { backgroundColor: colors.background }]}
-                    onPress={() => handleSetActive(card.id)}
+                  {!card.isActive && (
+                    <TouchableOpacity
+                      style={[styles.setActiveBtn, { backgroundColor: colors.accent }]}
+                      onPress={() => handleSetActive(card.id)}
+                    >
+                      <Text style={styles.setActiveBtnText}>Set Active</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                <View style={styles.controlActionsRow}>
+                  <TouchableOpacity
+                    style={[styles.actionChip, { backgroundColor: colors.glassCardSubtle, borderColor: colors.glassBorder }]}
+                    onPress={() => handleViewQR(card)}
                   >
-                    <Ionicons name="checkmark-circle" size={20} color={colors.accent} />
-                    <Text style={[styles.actionButtonText, { color: colors.text }]}>Set Active</Text>
+                    <Ionicons name="qr-code-outline" size={16} color={colors.accent} />
+                    <Text style={[styles.actionChipText, { color: colors.text }]}>QR Pass</Text>
                   </TouchableOpacity>
-                )}
 
-                <TouchableOpacity 
-                  style={[styles.actionButton, { backgroundColor: colors.background }]}
-                  onPress={() => handleViewQR(card)}
-                >
-                  <Ionicons name="qr-code" size={20} color={colors.accent} />
-                  <Text style={[styles.actionButtonText, { color: colors.text }]}>QR</Text>
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.actionChip, { backgroundColor: colors.glassCardSubtle, borderColor: colors.glassBorder }]}
+                    onPress={() => handleShare(card)}
+                  >
+                    <Ionicons name="share-social-outline" size={16} color={colors.accent} />
+                    <Text style={[styles.actionChipText, { color: colors.text }]}>Share vCard</Text>
+                  </TouchableOpacity>
 
-                <TouchableOpacity 
-                  style={[styles.actionButton, { backgroundColor: colors.background }]}
-                  onPress={() => handleShare(card)}
-                >
-                  <Ionicons name="share-social" size={20} color={colors.accent} />
-                  <Text style={[styles.actionButtonText, { color: colors.text }]}>Share</Text>
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.actionChip, { backgroundColor: colors.glassCardSubtle, borderColor: colors.glassBorder }]}
+                    onPress={() => handleEditCard(card.id)}
+                  >
+                    <Ionicons name="create-outline" size={16} color={colors.accent} />
+                    <Text style={[styles.actionChipText, { color: colors.text }]}>Edit</Text>
+                  </TouchableOpacity>
 
-                <TouchableOpacity 
-                  style={[styles.actionButton, { backgroundColor: colors.background }]}
-                  onPress={() => handleEditCard(card.id)}
-                >
-                  <Ionicons name="create" size={20} color={colors.accent} />
-                  <Text style={[styles.actionButtonText, { color: colors.text }]}>Edit</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                  style={[styles.actionButton, { backgroundColor: colors.background }]}
-                  onPress={() => handleDelete(card)}
-                >
-                  <Ionicons name="trash" size={20} color="#FF6B6B" />
-                  <Text style={[styles.actionButtonText, { color: colors.text }]}>Delete</Text>
-                </TouchableOpacity>
-              </View>
+                  <TouchableOpacity
+                    style={[styles.actionChip, { backgroundColor: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.25)' }]}
+                    onPress={() => handleDelete(card)}
+                  >
+                    <Ionicons name="trash-outline" size={16} color="#EF4444" />
+                    <Text style={[styles.actionChipText, { color: '#EF4444' }]}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
+              </GlassCard>
             </View>
           ))
         )}
       </ScrollView>
 
+      {/* QR Code Modal */}
       <Modal
         visible={showQRModal}
         transparent
@@ -208,7 +221,7 @@ export default function PersonalCardsScreen() {
         onRequestClose={() => setShowQRModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: colors.card, borderColor: colors.accent }]}>
+          <GlassCard variant="glow" style={styles.modalContent}>
             <TouchableOpacity 
               style={styles.modalClose}
               onPress={() => setShowQRModal(false)}
@@ -216,7 +229,10 @@ export default function PersonalCardsScreen() {
               <Ionicons name="close" size={24} color={colors.text} />
             </TouchableOpacity>
 
-            <Text style={[styles.modalTitle, { color: colors.text }]}>Your QR Code</Text>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Executive QR Pass</Text>
+            <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
+              Scan to save full digital vCard contact profile
+            </Text>
 
             {selectedCard && (
               <>
@@ -230,10 +246,13 @@ export default function PersonalCardsScreen() {
                 </View>
 
                 <Text style={[styles.cardNameDisplay, { color: colors.text }]}>{selectedCard.fullName}</Text>
-                <Text style={[styles.cardCompanyDisplay, { color: colors.textSecondary }]}>{selectedCard.companyName}</Text>
+                <Text style={[styles.cardCompanyDisplay, { color: colors.accent }]}>{selectedCard.companyName}</Text>
+                <Text style={[styles.cardDesignationDisplay, { color: colors.textSecondary }]}>
+                  {selectedCard.designation}
+                </Text>
               </>
             )}
-          </View>
+          </GlassCard>
         </View>
       </Modal>
     </>
@@ -244,150 +263,180 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  center: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   loadingText: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginTop: 100,
+    fontSize: 15,
+    fontWeight: '600',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#2A2F3E',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingBottom: 12,
   },
-  backButton: {
-    padding: 8,
+  headerBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 13,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    flex: 1,
-    textAlign: 'center',
+    fontWeight: '800',
   },
-  addButton: {
-    padding: 8,
+  cardWrapper: {
+    marginBottom: 20,
+  },
+  cardControlsCard: {
+    marginHorizontal: 16,
+    marginTop: -4,
+    padding: 14,
+    borderRadius: 20,
+  },
+  controlHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  activeStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  statusLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  setActiveBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  setActiveBtnText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#0B0F17',
+  },
+  controlActionsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  actionChip: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  actionChipText: {
+    fontSize: 11,
+    fontWeight: '600',
   },
   emptyState: {
-    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 32,
+    paddingVertical: 80,
+  },
+  emptyIconWrap: {
+    width: 88,
+    height: 88,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
-    marginTop: 100,
+    marginBottom: 20,
   },
   emptyText: {
     fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 16,
+    fontWeight: '800',
   },
   emptySubtext: {
-    fontSize: 14,
-    marginTop: 8,
+    fontSize: 13,
     textAlign: 'center',
+    marginTop: 6,
+    marginBottom: 24,
   },
   createFirstButton: {
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginTop: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 16,
   },
   createFirstButtonText: {
     color: '#0B0F17',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  cardContainer: {
-    margin: 16,
-    borderRadius: 16,
-    padding: 16,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-  },
-  cardInfo: {
-    flex: 1,
-  },
-  cardName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  cardCompany: {
     fontSize: 14,
-    marginBottom: 2,
-  },
-  cardDesignation: {
-    fontSize: 12,
-  },
-  activeBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  activeText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  cardActions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  actionButtonText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '800',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
   },
   modalContent: {
-    borderRadius: 20,
-    padding: 32,
     width: '100%',
-    maxWidth: 400,
-    borderWidth: 1,
+    maxWidth: 380,
+    padding: 24,
+    borderRadius: 24,
+    alignItems: 'center',
   },
   modalClose: {
     position: 'absolute',
     top: 16,
     right: 16,
-    padding: 8,
+    padding: 6,
+    zIndex: 2,
   },
   modalTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '800',
+    marginTop: 8,
+  },
+  modalSubtitle: {
+    fontSize: 12,
     textAlign: 'center',
-    marginBottom: 24,
+    marginTop: 4,
+    marginBottom: 16,
   },
   qrContainer: {
-    alignItems: 'center',
+    padding: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 4,
     marginBottom: 16,
   },
   cardNameDisplay: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 4,
+    fontSize: 18,
+    fontWeight: '800',
   },
   cardCompanyDisplay: {
     fontSize: 14,
-    textAlign: 'center',
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  cardDesignationDisplay: {
+    fontSize: 12,
+    marginTop: 2,
   },
 });

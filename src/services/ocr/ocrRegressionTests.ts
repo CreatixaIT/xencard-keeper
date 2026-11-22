@@ -1,4 +1,4 @@
-import type { BusinessCardData, OcrDocument } from './ocrEngine';
+import type { OcrDocument } from './ocrEngine';
 import { businessCardExtractor } from './businessCardExtractor';
 
 /**
@@ -216,7 +216,7 @@ export class OCRRegressionTests {
   /**
    * Run tests against pre-extracted data (legacy compatibility)
    */
-  runTests(extractedData: BusinessCardData): TestResult[] {
+  runTests(): TestResult[] {
     return this.runAllTests();
   }
 
