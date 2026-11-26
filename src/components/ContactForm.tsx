@@ -187,7 +187,7 @@ export default function ContactForm({ initialContact, onSave, onCancel, contactI
                   ]}
                   onPress={() => setIndustry(ind)}
                 >
-                  <Text style={[styles.industryPillText, { color: active ? '#0B0F17' : colors.textSecondary, fontWeight: active ? '700' : '500' }]}>
+                  <Text style={[styles.industryPillText, { color: active ? '#FFFFFF' : colors.textSecondary, fontWeight: active ? '700' : '500' }]}>
                     {ind}
                   </Text>
                 </TouchableOpacity>
@@ -321,7 +321,7 @@ export default function ContactForm({ initialContact, onSave, onCancel, contactI
         </TouchableOpacity>
 
         <TouchableOpacity style={[styles.submitBtn, { backgroundColor: colors.accent }]} onPress={handleSave}>
-          <Ionicons name="checkmark-circle" size={18} color="#0B0F17" />
+          <Ionicons name="checkmark-circle" size={18} color="#FFFFFF" />
           <Text style={styles.submitBtnText}>{isEditing ? 'Update Contact' : 'Save Contact'}</Text>
         </TouchableOpacity>
       </View>
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   saveHeaderBtnText: {
-    color: '#0B0F17',
+    color: '#FFFFFF',
     fontSize: 13,
     fontWeight: '800',
   },
@@ -450,7 +450,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   submitBtnText: {
-    color: '#0B0F17',
+    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '800',
   },

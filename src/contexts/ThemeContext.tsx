@@ -28,50 +28,51 @@ export interface ThemeColors {
   surfaceMuted: string;
 }
 
+// Xentro brand colors: Red (#E63329) + Gold (#F5A623) combination (from assets/xentrologo.png)
 const darkColors: ThemeColors = {
-  background: '#0B0F17',
-  card: '#161C2B',
+  background: '#0D0A0B',
+  card: '#181214',
   text: '#FFFFFF',
-  textSecondary: '#94A3B8',
-  accent: '#00F2FE',
-  accentSecondary: '#4FACFE',
-  border: '#232B3E',
-  input: '#151B28',
+  textSecondary: '#B8A8AA',
+  accent: '#E63329',          // Xentro Red
+  accentSecondary: '#F5A623', // Xentro Gold
+  border: '#2E1E21',
+  input: '#161012',
   success: '#10B981',
-  warning: '#F59E0B',
+  warning: '#F5A623',
   error: '#EF4444',
-  glassCard: 'rgba(22, 28, 43, 0.75)',
-  glassCardSubtle: 'rgba(26, 33, 50, 0.55)',
+  glassCard: 'rgba(24, 18, 20, 0.80)',
+  glassCardSubtle: 'rgba(32, 22, 24, 0.58)',
   glassBorder: 'rgba(255, 255, 255, 0.10)',
-  glassBorderGlow: 'rgba(0, 242, 254, 0.28)',
-  glowCyan: '#00F2FE',
-  glowBlue: '#4FACFE',
-  glowPurple: '#8B5CF6',
-  surfaceElevated: '#1A2234',
-  surfaceMuted: 'rgba(15, 23, 42, 0.85)',
+  glassBorderGlow: 'rgba(230, 51, 41, 0.40)',
+  glowCyan: '#E63329',
+  glowBlue: '#F5A623',
+  glowPurple: '#F5A623',
+  surfaceElevated: '#211719',
+  surfaceMuted: 'rgba(13, 10, 11, 0.88)',
 };
 
 const lightColors: ThemeColors = {
-  background: '#F8FAFC',
+  background: '#FFF9F7',
   card: '#FFFFFF',
-  text: '#0F172A',
-  textSecondary: '#64748B',
-  accent: '#0284C7',
-  accentSecondary: '#2563EB',
-  border: '#E2E8F0',
-  input: '#F1F5F9',
+  text: '#1A0E0E',
+  textSecondary: '#6D5959',
+  accent: '#D92B22',          // Crisp Xentro Red
+  accentSecondary: '#D97706', // Rich Xentro Gold
+  border: '#F5D6D3',
+  input: '#FFF1EF',
   success: '#059669',
   warning: '#D97706',
   error: '#DC2626',
-  glassCard: 'rgba(255, 255, 255, 0.88)',
-  glassCardSubtle: 'rgba(248, 250, 252, 0.70)',
-  glassBorder: 'rgba(0, 0, 0, 0.08)',
-  glassBorderGlow: 'rgba(2, 132, 199, 0.25)',
-  glowCyan: '#0284C7',
-  glowBlue: '#2563EB',
-  glowPurple: '#7C3AED',
+  glassCard: 'rgba(255, 255, 255, 0.90)',
+  glassCardSubtle: 'rgba(255, 246, 244, 0.78)',
+  glassBorder: 'rgba(217, 43, 34, 0.12)',
+  glassBorderGlow: 'rgba(217, 43, 34, 0.30)',
+  glowCyan: '#E63329',
+  glowBlue: '#F5A623',
+  glowPurple: '#D97706',
   surfaceElevated: '#FFFFFF',
-  surfaceMuted: 'rgba(241, 245, 249, 0.85)',
+  surfaceMuted: 'rgba(255, 244, 242, 0.90)',
 };
 
 interface ThemeContextType {

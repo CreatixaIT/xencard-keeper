@@ -32,7 +32,7 @@ export default function OnboardingScreen() {
   if (isChecking) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color="#E63329" />
       </View>
     );
   }
@@ -77,7 +77,7 @@ export default function OnboardingScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Welcome to Xencard Keeper</Text>
+        <Text style={styles.title}>Welcome to Xencard</Text>
         <Text style={styles.subtitle}>Your intelligent business card manager</Text>
 
         <View style={styles.form}>
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     borderColor: '#E5E5EA',
   },
   button: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#E63329',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -202,12 +202,14 @@ const styles = StyleSheet.create({
   infoBox: {
     marginTop: 24,
     padding: 16,
-    backgroundColor: '#E6F4FE',
+    backgroundColor: '#FFF1EF',
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#FAD2CE',
   },
   infoText: {
     fontSize: 14,
-    color: '#007AFF',
+    color: '#B91C1C',
     marginBottom: 8,
   },
 });

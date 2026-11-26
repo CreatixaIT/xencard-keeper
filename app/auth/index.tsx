@@ -7,31 +7,30 @@ import { useTheme } from '../../src/contexts/ThemeContext';
 const XencardLogo = () => (
   <Svg width={240} height={80} viewBox="0 0 600 200">
     <Defs>
-      <LinearGradient id="cyanBlue" x1="0%" y1="0%" x2="100%" y2="100%">
-        <Stop offset="0%" stopColor="#00F2FE" />
-        <Stop offset="100%" stopColor="#4FACFE" />
+      <LinearGradient id="xentroGradAuth" x1="0%" y1="0%" x2="100%" y2="100%">
+        <Stop offset="0%" stopColor="#E63329" />
+        <Stop offset="100%" stopColor="#F5A623" />
       </LinearGradient>
-      <LinearGradient id="darkShield" x1="0%" y1="0%" x2="100%" y2="100%">
-        <Stop offset="0%" stopColor="#1E293B" />
-        <Stop offset="100%" stopColor="#0F172A" />
+      <LinearGradient id="darkShieldAuth" x1="0%" y1="0%" x2="100%" y2="100%">
+        <Stop offset="0%" stopColor="#2A1A1A" />
+        <Stop offset="100%" stopColor="#0D0A0A" />
       </LinearGradient>
     </Defs>
     {/* Logo Mark */}
-    <Path d="M 75,15 L 125,40 V 100 C 125,130 75,155 75,155 C 75,155 25,130 25,100 V 40 Z" 
-          fill="url(#darkShield)" stroke="#1E293B" strokeWidth="3" />
-    <Rect x="42" y="55" width="60" height="40" rx="6" 
-          fill="#1E293B" stroke="#00F2FE" strokeWidth="1.5" strokeOpacity="0.5" 
-          transform="rotate(-12 72 75)" />
-    <Rect x="48" y="55" width="60" height="40" rx="6" 
-          fill="url(#cyanBlue)" opacity="0.9"
-          transform="rotate(8 78 75)" />
-    <Path d="M 63,65 L 87,85 M 87,65 L 63,85" 
-          stroke="#0B0F17" strokeWidth="4.5" strokeLinecap="round" 
-          transform="rotate(8 78 75)" />
+    <Path d="M 75,15 L 125,40 V 100 C 125,130 75,155 75,155 C 75,155 25,130 25,100 V 40 Z"
+      fill="url(#darkShieldAuth)" stroke="#2A1A1A" strokeWidth="3" />
+    <Rect x="42" y="55" width="60" height="40" rx="6"
+      fill="#2A1A1A" stroke="#E63329" strokeWidth="1.5" strokeOpacity="0.5"
+      transform="rotate(-12 72 75)" />
+    <Rect x="48" y="55" width="60" height="40" rx="6"
+      fill="url(#xentroGradAuth)" opacity="0.9"
+      transform="rotate(8 78 75)" />
+    <Path d="M 63,65 L 87,85 M 87,65 L 63,85"
+      stroke="#0D0A0A" strokeWidth="4.5" strokeLinecap="round"
+      transform="rotate(8 78 75)" />
     {/* Wordmark */}
     <SvgText x="180" y="112" fontSize="38" fontWeight="800" fill="#FFFFFF" letterSpacing="1">XEN</SvgText>
-    <SvgText x="268" y="112" fontSize="38" fontWeight="800" fill="#00F2FE" letterSpacing="1">CARD</SvgText>
-    <SvgText x="182" y="140" fontSize="16" fontWeight="500" fill="#94A3B8" letterSpacing="7">KEEPER</SvgText>
+    <SvgText x="268" y="112" fontSize="38" fontWeight="800" fill="#E63329" letterSpacing="1">CARD</SvgText>
   </Svg>
 );
 
@@ -54,7 +53,7 @@ export default function AuthScreen() {
           <XencardLogo />
         </View>
 
-        <Text style={[styles.welcomeText, { color: colors.text }]}>Welcome to Xencard Keeper</Text>
+        <Text style={[styles.welcomeText, { color: colors.text }]}>Welcome to Xencard</Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           Your business cards. Always with you.
         </Text>

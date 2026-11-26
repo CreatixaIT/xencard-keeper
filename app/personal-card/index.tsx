@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   editButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#E63329',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   },
   cardHeader: {
     padding: 24,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#E63329',
     alignItems: 'center',
   },
   name: {
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
   },
   company: {
     fontSize: 14,
-    color: '#E6F4FE',
+    color: '#FDE68A',
   },
   cardBody: {
     padding: 20,
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   },
   infoValueLink: {
     fontSize: 16,
-    color: '#007AFF',
+    color: '#E63329',
     fontWeight: '500',
   },
   cardActions: {
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   },
   cardActionButton: {
     flex: 1,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#E63329',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',

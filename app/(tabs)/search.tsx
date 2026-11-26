@@ -135,7 +135,7 @@ export default function SearchScreen() {
         {item.thumbnailUri ? (
           <Image source={{ uri: item.thumbnailUri }} style={styles.thumbnail} />
         ) : (
-          <View style={[styles.thumbnailPlaceholder, { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' }]}>
+          <View style={[styles.thumbnailPlaceholder, { backgroundColor: isDark ? '#26181A' : '#FEE2E2' }]}>
             <Text style={[styles.avatarInitial, { color: colors.accent }]}>
               {(item.personName || 'U').charAt(0).toUpperCase()}
             </Text>
@@ -294,7 +294,7 @@ export default function SearchScreen() {
                 <Text
                   style={[
                     styles.industryChipText,
-                    { color: active ? '#0B0F17' : colors.textSecondary, fontWeight: active ? '700' : '500' },
+                    { color: active ? '#FFFFFF' : colors.textSecondary, fontWeight: active ? '700' : '500' },
                   ]}
                 >
                   {item}
@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
   executeButtonText: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#0B0F17',
+    color: '#FFFFFF',
     letterSpacing: 0.5,
   },
   actionContactName: {

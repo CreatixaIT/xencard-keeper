@@ -351,7 +351,7 @@ export default function PersonalCardCreateScreen() {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#0B0F17" />
+            <ActivityIndicator color="#FFFFFF" />
           ) : (
             <Text style={styles.saveButtonText}>{editId ? 'Update Card' : 'Save Card'}</Text>
           )}
@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#2A2F3E',
+    borderBottomColor: '#2E1E21',
   },
   backButton: {
     padding: 8,
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   saveButtonText: {
-    color: '#0B0F17',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
   },

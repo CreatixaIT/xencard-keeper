@@ -71,7 +71,7 @@ export default function ContactDetailScreen() {
     if (phone) {
       const cleanPhone = phone.replace(/[^0-9]/g, '');
       const greeting = encodeURIComponent(
-        `Hello ${contact?.personName || ''}, connecting with you via Xencard Keeper!`
+        `Hello ${contact?.personName || ''}, connecting with you via Xencard!`
       );
       Linking.openURL(`https://wa.me/${cleanPhone}?text=${greeting}`);
     } else {
@@ -171,7 +171,7 @@ export default function ContactDetailScreen() {
         {/* Hero Profile Card */}
         <GlassCard variant="glow" style={styles.heroCard}>
           <View style={styles.heroRow}>
-            <View style={[styles.heroAvatar, { backgroundColor: 'rgba(0, 242, 254, 0.15)', borderColor: colors.accent }]}>
+            <View style={[styles.heroAvatar, { backgroundColor: 'rgba(230, 51, 41, 0.15)', borderColor: colors.accent }]}>
               <Text style={[styles.heroAvatarText, { color: colors.accent }]}>
                 {(contact.personName || 'U').charAt(0).toUpperCase()}
               </Text>
@@ -211,7 +211,7 @@ export default function ContactDetailScreen() {
             style={[styles.actionBtn, { backgroundColor: colors.glassCard, borderColor: colors.glassBorder }]}
             onPress={handleCall}
           >
-            <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(0, 242, 254, 0.15)' }]}>
+            <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(230, 51, 41, 0.15)' }]}>
               <Ionicons name="call" size={20} color={colors.accent} />
             </View>
             <Text style={[styles.actionBtnText, { color: colors.text }]}>Call</Text>
@@ -231,8 +231,8 @@ export default function ContactDetailScreen() {
             style={[styles.actionBtn, { backgroundColor: colors.glassCard, borderColor: colors.glassBorder }]}
             onPress={handleEmail}
           >
-            <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(56, 189, 248, 0.15)' }]}>
-              <Ionicons name="mail" size={20} color="#38BDF8" />
+            <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(245, 166, 35, 0.15)' }]}>
+              <Ionicons name="mail" size={20} color={colors.accentSecondary} />
             </View>
             <Text style={[styles.actionBtnText, { color: colors.text }]}>Email</Text>
           </TouchableOpacity>
@@ -241,8 +241,8 @@ export default function ContactDetailScreen() {
             style={[styles.actionBtn, { backgroundColor: colors.glassCard, borderColor: colors.glassBorder }]}
             onPress={handleMaps}
           >
-            <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(168, 85, 247, 0.15)' }]}>
-              <Ionicons name="map" size={20} color="#A855F7" />
+            <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(251, 146, 60, 0.15)' }]}>
+              <Ionicons name="map" size={20} color="#FB923C" />
             </View>
             <Text style={[styles.actionBtnText, { color: colors.text }]}>Maps</Text>
           </TouchableOpacity>
@@ -254,7 +254,7 @@ export default function ContactDetailScreen() {
           style={[styles.vCardBanner, { backgroundColor: colors.accent, shadowColor: colors.glowCyan }]}
           onPress={handleExportVCard}
         >
-          <Ionicons name="person-add" size={20} color="#0B0F17" />
+          <Ionicons name="person-add" size={20} color="#FFFFFF" />
           <Text style={styles.vCardBannerText}>Save to Phonebook (Export vCard)</Text>
         </TouchableOpacity>
 
@@ -269,7 +269,7 @@ export default function ContactDetailScreen() {
                   style={[styles.sideBtn, activeSide === 'front' && { backgroundColor: colors.accent }]}
                   onPress={() => setActiveSide('front')}
                 >
-                  <Text style={[styles.sideBtnText, { color: activeSide === 'front' ? '#0B0F17' : colors.textSecondary }]}>
+                  <Text style={[styles.sideBtnText, { color: activeSide === 'front' ? '#FFFFFF' : colors.textSecondary }]}>
                     Front
                   </Text>
                 </TouchableOpacity>
@@ -278,7 +278,7 @@ export default function ContactDetailScreen() {
                   style={[styles.sideBtn, activeSide === 'back' && { backgroundColor: colors.accent }]}
                   onPress={() => setActiveSide('back')}
                 >
-                  <Text style={[styles.sideBtnText, { color: activeSide === 'back' ? '#0B0F17' : colors.textSecondary }]}>
+                  <Text style={[styles.sideBtnText, { color: activeSide === 'back' ? '#FFFFFF' : colors.textSecondary }]}>
                     Back
                   </Text>
                 </TouchableOpacity>
@@ -316,7 +316,7 @@ export default function ContactDetailScreen() {
                 style={styles.infoRow}
                 onPress={() => copyToClipboard('Phone number', contact.phone)}
               >
-                <View style={[styles.fieldIcon, { backgroundColor: 'rgba(0, 242, 254, 0.12)' }]}>
+                <View style={[styles.fieldIcon, { backgroundColor: 'rgba(230, 51, 41, 0.14)' }]}>
                   <Ionicons name="call-outline" size={18} color={colors.accent} />
                 </View>
                 <View style={styles.fieldContent}>
@@ -334,7 +334,7 @@ export default function ContactDetailScreen() {
                 style={styles.infoRow}
                 onPress={() => copyToClipboard('Alternate phone', contact.alternatePhone)}
               >
-                <View style={[styles.fieldIcon, { backgroundColor: 'rgba(0, 242, 254, 0.12)' }]}>
+                <View style={[styles.fieldIcon, { backgroundColor: 'rgba(230, 51, 41, 0.14)' }]}>
                   <Ionicons name="call-outline" size={18} color={colors.accent} />
                 </View>
                 <View style={styles.fieldContent}>
@@ -370,8 +370,8 @@ export default function ContactDetailScreen() {
                 style={styles.infoRow}
                 onPress={() => copyToClipboard('Email', contact.email)}
               >
-                <View style={[styles.fieldIcon, { backgroundColor: 'rgba(56, 189, 248, 0.12)' }]}>
-                  <Ionicons name="mail-outline" size={18} color="#38BDF8" />
+                <View style={[styles.fieldIcon, { backgroundColor: 'rgba(245, 166, 35, 0.14)' }]}>
+                  <Ionicons name="mail-outline" size={18} color={colors.accentSecondary} />
                 </View>
                 <View style={styles.fieldContent}>
                   <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Email Address</Text>
@@ -385,8 +385,8 @@ export default function ContactDetailScreen() {
           {(contact.address || contact.city || contact.country) && (
             <GlassCard variant="subtle" style={styles.infoCard}>
               <TouchableOpacity style={styles.infoRow} onPress={handleMaps}>
-                <View style={[styles.fieldIcon, { backgroundColor: 'rgba(168, 85, 247, 0.12)' }]}>
-                  <Ionicons name="location-outline" size={18} color="#A855F7" />
+                <View style={[styles.fieldIcon, { backgroundColor: 'rgba(251, 146, 60, 0.14)' }]}>
+                  <Ionicons name="location-outline" size={18} color="#FB923C" />
                 </View>
                 <View style={styles.fieldContent}>
                   <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Address & City</Text>
@@ -420,8 +420,8 @@ export default function ContactDetailScreen() {
           {contact.notes ? (
             <GlassCard variant="subtle" style={styles.infoCard}>
               <View style={styles.infoRow}>
-                <View style={[styles.fieldIcon, { backgroundColor: 'rgba(99, 102, 241, 0.12)' }]}>
-                  <Ionicons name="document-text-outline" size={18} color="#6366F1" />
+                <View style={[styles.fieldIcon, { backgroundColor: 'rgba(245, 166, 35, 0.14)' }]}>
+                  <Ionicons name="document-text-outline" size={18} color={colors.accentSecondary} />
                 </View>
                 <View style={styles.fieldContent}>
                   <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Notes</Text>
@@ -661,7 +661,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   vCardBannerText: {
-    color: '#0B0F17',
+    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '800',
     letterSpacing: 0.3,
@@ -707,7 +707,7 @@ const styles = StyleSheet.create({
   cardImage: {
     width: '100%',
     height: 210,
-    backgroundColor: '#0F172A',
+    backgroundColor: '#161012',
   },
   noImagePlaceholder: {
     height: 180,

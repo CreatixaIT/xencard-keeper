@@ -194,14 +194,14 @@ const styles = StyleSheet.create({
     borderColor: '#E5E5EA',
   },
   fileButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#F5A623',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 8,
   },
   fileButtonText: {
-    color: '#FFF',
+    color: '#1A0E0E',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     flex: 1,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#E63329',
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',

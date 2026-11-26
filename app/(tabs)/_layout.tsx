@@ -20,7 +20,7 @@ export default function TabLayout() {
           bottom: Math.max(insets.bottom, 12),
           height: 66,
           borderRadius: 26,
-          backgroundColor: isDark ? 'rgba(16, 22, 38, 0.88)' : 'rgba(255, 255, 255, 0.92)',
+          backgroundColor: isDark ? 'rgba(20, 14, 16, 0.92)' : 'rgba(255, 255, 255, 0.94)',
           borderTopWidth: 0,
           borderWidth: 1.5,
           borderColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)',

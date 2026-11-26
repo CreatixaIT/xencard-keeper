@@ -85,7 +85,7 @@ export default function ProfileScreen() {
   const handleLogout = async () => {
     Alert.alert(
       'Logout',
-      'Are you sure you want to log out of Xencard Keeper?',
+      'Are you sure you want to log out of Xencard?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -130,14 +130,14 @@ export default function ProfileScreen() {
       {profile && (
         <GlassCard variant="glow" style={styles.profileCard}>
           <View style={styles.profileHeader}>
-            <View style={[styles.avatar, { backgroundColor: 'rgba(0, 242, 254, 0.15)', borderColor: colors.accent }]}>
+            <View style={[styles.avatar, { backgroundColor: 'rgba(230, 51, 41, 0.15)', borderColor: colors.accent }]}>
               <Text style={[styles.avatarText, { color: colors.accent }]}>
                 {(profile.fullName || 'U').charAt(0).toUpperCase()}
               </Text>
             </View>
             <View style={styles.profileInfo}>
               <Text style={[styles.profileName, { color: colors.text }]}>{profile.fullName}</Text>
-              <Text style={[styles.profileDesignation, { color: colors.accent }]}>{profile.designation}</Text>
+              <Text style={[styles.profileDesignation, { color: colors.accentSecondary }]}>{profile.designation}</Text>
               <Text style={[styles.profileCompany, { color: colors.textSecondary }]}>
                 {profile.company || 'Enterprise Leader'}
               </Text>
@@ -146,11 +146,11 @@ export default function ProfileScreen() {
 
           <View style={styles.profileDetailsGrid}>
             <View style={[styles.detailTile, { backgroundColor: colors.glassCardSubtle, borderColor: colors.glassBorder }]}>
-              <Ionicons name="card" size={16} color={colors.accent} />
+              <Ionicons name="card" size={16} color={colors.accentSecondary} />
               <View>
                 <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Vault ID</Text>
                 <Text style={[styles.detailValue, { color: colors.text }]} numberOfLines={1}>
-                  {xencardId ? `${xencardId.slice(0, 10)}...` : 'Not Set'}
+                  {xencardId || 'Not Set'}
                 </Text>
               </View>
             </View>
@@ -175,7 +175,7 @@ export default function ProfileScreen() {
           style={styles.menuCard}
           onPress={() => setShowQRModal(true)}
         >
-          <View style={[styles.menuIcon, { backgroundColor: 'rgba(0, 242, 254, 0.12)' }]}>
+          <View style={[styles.menuIcon, { backgroundColor: 'rgba(230, 51, 41, 0.14)' }]}>
             <Ionicons name="qr-code" size={22} color={colors.accent} />
           </View>
           <View style={styles.menuTextContent}>
@@ -214,13 +214,13 @@ export default function ProfileScreen() {
           style={styles.menuCard}
           onPress={() => setShowAppDownloadModal(true)}
         >
-          <View style={[styles.menuIcon, { backgroundColor: 'rgba(56, 189, 248, 0.12)' }]}>
-            <Ionicons name="cloud-download-outline" size={22} color="#38BDF8" />
+          <View style={[styles.menuIcon, { backgroundColor: 'rgba(245, 166, 35, 0.14)' }]}>
+            <Ionicons name="cloud-download-outline" size={22} color={colors.accentSecondary} />
           </View>
           <View style={styles.menuTextContent}>
             <Text style={[styles.menuTitle, { color: colors.text }]}>Share App Download QR</Text>
             <Text style={[styles.menuSubtitle, { color: colors.textSecondary }]}>
-              Help others install Xencard Keeper APK
+              Help others install Xencard APK
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
@@ -236,8 +236,8 @@ export default function ProfileScreen() {
           style={styles.menuCard}
           onPress={() => router.push('/settings')}
         >
-          <View style={[styles.menuIcon, { backgroundColor: 'rgba(168, 85, 247, 0.12)' }]}>
-            <Ionicons name="color-palette-outline" size={22} color="#A855F7" />
+          <View style={[styles.menuIcon, { backgroundColor: 'rgba(245, 166, 35, 0.14)' }]}>
+            <Ionicons name="color-palette-outline" size={22} color={colors.accentSecondary} />
           </View>
           <View style={styles.menuTextContent}>
             <Text style={[styles.menuTitle, { color: colors.text }]}>Appearance & Theme</Text>
@@ -268,8 +268,8 @@ export default function ProfileScreen() {
 
       {/* Footer Branding */}
       <View style={styles.footer}>
-        <Text style={[styles.footerTitle, { color: colors.text }]}>XENCARD KEEPER</Text>
-        <Text style={[styles.footerSubtitle, { color: colors.accent }]}>
+        <Text style={[styles.footerTitle, { color: colors.text }]}>XENCARD</Text>
+        <Text style={[styles.footerSubtitle, { color: colors.accentSecondary }]}>
           Powered by Xeni AI • Offline-First Executive Vault
         </Text>
         <TouchableOpacity onPress={handleContactUs}>
@@ -300,29 +300,29 @@ export default function ProfileScreen() {
                 <QRCode
                   value={profileUrl}
                   size={190}
-                  color="#0F172A"
+                  color="#1A0E0E"
                   backgroundColor="#FFFFFF"
                 />
               </View>
             )}
 
-            <Text style={[styles.xencardIdDisplay, { color: colors.accent }]}>{xencardId}</Text>
+            <Text style={[styles.xencardIdDisplay, { color: colors.accentSecondary }]}>{xencardId}</Text>
 
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: colors.surfaceElevated, borderColor: colors.glassBorder }]}
                 onPress={handleCopyXencardId}
               >
-                <Ionicons name="copy-outline" size={18} color={colors.accent} />
+                <Ionicons name="copy-outline" size={18} color={colors.accentSecondary} />
                 <Text style={[styles.modalButtonText, { color: colors.text }]}>Copy ID</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: colors.accent }]}
+                style={[styles.modalButton, { backgroundColor: colors.accent, borderColor: colors.accent }]}
                 onPress={handleShareProfile}
               >
-                <Ionicons name="share-social-outline" size={18} color="#0B0F17" />
-                <Text style={[styles.modalButtonText, { color: '#0B0F17', fontWeight: '700' }]}>
+                <Ionicons name="share-social-outline" size={18} color="#FFFFFF" />
+                <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontWeight: '700' }]}>
                   Share
                 </Text>
               </TouchableOpacity>
@@ -354,14 +354,14 @@ export default function ProfileScreen() {
                 <QRCode
                   value={referralUrl}
                   size={180}
-                  color="#0F172A"
+                  color="#1A0E0E"
                   backgroundColor="#FFFFFF"
                 />
               </View>
             )}
 
             <View style={[styles.referralCodeContainer, { backgroundColor: colors.background, borderColor: colors.glassBorderGlow }]}>
-              <Text style={[styles.referralCode, { color: colors.accent }]}>{profile?.referralCode}</Text>
+              <Text style={[styles.referralCode, { color: colors.accentSecondary }]}>{profile?.referralCode}</Text>
             </View>
 
             <View style={styles.modalButtons}>
@@ -369,16 +369,16 @@ export default function ProfileScreen() {
                 style={[styles.modalButton, { backgroundColor: colors.surfaceElevated, borderColor: colors.glassBorder }]}
                 onPress={handleCopyReferralLink}
               >
-                <Ionicons name="copy-outline" size={18} color={colors.accent} />
+                <Ionicons name="copy-outline" size={18} color={colors.accentSecondary} />
                 <Text style={[styles.modalButtonText, { color: colors.text }]}>Copy Link</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: colors.accent }]}
+                style={[styles.modalButton, { backgroundColor: colors.accent, borderColor: colors.accent }]}
                 onPress={handleShareReferral}
               >
-                <Ionicons name="share-social-outline" size={18} color="#0B0F17" />
-                <Text style={[styles.modalButtonText, { color: '#0B0F17', fontWeight: '700' }]}>
+                <Ionicons name="share-social-outline" size={18} color="#FFFFFF" />
+                <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontWeight: '700' }]}>
                   Invite
                 </Text>
               </TouchableOpacity>
@@ -402,14 +402,14 @@ export default function ProfileScreen() {
 
             <Text style={[styles.modalTitle, { color: colors.text }]}>Download App</Text>
             <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
-              Scan this QR code to download the official Xencard Keeper APK
+              Scan this QR code to download the official Xencard APK
             </Text>
 
             <View style={styles.qrContainer}>
               <QRCode
                 value={appDownloadUrl}
                 size={180}
-                color="#0F172A"
+                color="#1A0E0E"
                 backgroundColor="#FFFFFF"
               />
             </View>
@@ -418,7 +418,7 @@ export default function ProfileScreen() {
               style={[styles.openDownloadBtn, { backgroundColor: colors.accent }]}
               onPress={() => Linking.openURL(appDownloadUrl)}
             >
-              <Ionicons name="download" size={18} color="#0B0F17" />
+              <Ionicons name="download" size={18} color="#FFFFFF" />
               <Text style={styles.openDownloadBtnText}>Open Download Page</Text>
             </TouchableOpacity>
           </GlassCard>
@@ -678,7 +678,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   openDownloadBtnText: {
-    color: '#0B0F17',
+    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '700',
   },

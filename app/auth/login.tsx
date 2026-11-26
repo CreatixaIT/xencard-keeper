@@ -4,9 +4,11 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { syncService } from '../../src/services/sync/syncService';
 import { getUserProfile } from '../../src/db/repositories/userProfileRepository';
+import { useTheme } from '../../src/contexts/ThemeContext';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
   const [xencardId, setXencardId] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -18,15 +20,11 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-      // Login with cloud sync
       await syncService.loginUser(xencardId.trim());
 
-      // Check if local profile exists
       const localProfile = await getUserProfile();
       
       if (!localProfile) {
-        // Create local profile from cloud data
-        // This would normally sync data from cloud, but for MVP we'll just navigate
         Alert.alert('Success', 'Logged in successfully');
       }
 
@@ -40,49 +38,53 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.content}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color="#00F2FE" />
+          <Ionicons name="arrow-back" size={24} color={colors.accent} />
         </TouchableOpacity>
 
-        <Text style={styles.title}>Log In</Text>
-        <Text style={styles.subtitle}>Access your Xencard account</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Log In</Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Access your Xencard account</Text>
 
         <View style={styles.form}>
-          <Text style={styles.label}>Enter your Xencard ID</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Enter your 6-Character Xencard ID</Text>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              { backgroundColor: colors.input, color: colors.text, borderColor: colors.border },
+            ]}
             value={xencardId}
             onChangeText={setXencardId}
-            placeholder="XENXXXXXXXX"
-            placeholderTextColor="#8E8E93"
+            placeholder="e.g. MO98K4"
+            placeholderTextColor={colors.textSecondary}
             autoCapitalize="characters"
+            maxLength={16}
             textAlign="center"
           />
 
           <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
+            style={[styles.button, { backgroundColor: colors.accent }, loading && styles.buttonDisabled]}
             onPress={handleLogin}
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#0B0F17" />
+              <ActivityIndicator color="#FFFFFF" />
             ) : (
               <Text style={styles.buttonText}>Log In</Text>
             )}
           </TouchableOpacity>
         </View>
 
-        <View style={styles.infoBox}>
-          <Text style={styles.infoText}>
+        <View style={[styles.infoBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[styles.infoText, { color: colors.textSecondary }]}>
             Don't have an Xencard ID?
           </Text>
           <TouchableOpacity onPress={() => router.push('/auth/register')}>
-            <Text style={styles.linkText}>Create one now</Text>
+            <Text style={[styles.linkText, { color: colors.accentSecondary }]}>Create one now</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -93,7 +95,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B0F17',
+    backgroundColor: '#0D0A0B',
   },
   content: {
     flex: 1,
@@ -111,7 +113,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#8E8E93',
+    color: '#B8A8AA',
     marginBottom: 48,
   },
   form: {
@@ -124,18 +126,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#1A1F2E',
+    backgroundColor: '#161012',
     borderRadius: 12,
     padding: 20,
     fontSize: 20,
     fontWeight: 'bold',
-    letterSpacing: 2,
+    letterSpacing: 3,
     color: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#2A2F3E',
+    borderColor: '#2E1E21',
   },
   button: {
-    backgroundColor: '#00F2FE',
+    backgroundColor: '#E63329',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -145,27 +147,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#8E8E93',
   },
   buttonText: {
-    color: '#0B0F17',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
   },
   infoBox: {
-    backgroundColor: '#1A1F2E',
+    backgroundColor: '#181214',
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#2A2F3E',
+    borderColor: '#2E1E21',
     marginTop: 32,
     alignItems: 'center',
   },
   infoText: {
     fontSize: 14,
-    color: '#8E8E93',
+    color: '#B8A8AA',
     marginBottom: 8,
   },
   linkText: {
     fontSize: 16,
-    color: '#00F2FE',
+    color: '#F5A623',
     fontWeight: '600',
   },
 });

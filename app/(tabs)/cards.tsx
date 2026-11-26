@@ -72,7 +72,7 @@ export default function CardsScreen() {
     const phone = selectedContact?.whatsappNumber || selectedContact?.phone;
     if (phone) {
       const clean = phone.replace(/[^0-9]/g, '');
-      const greeting = encodeURIComponent(`Hello ${selectedContact?.personName || ''}, connecting via Xencard Keeper!`);
+      const greeting = encodeURIComponent(`Hello ${selectedContact?.personName || ''}, connecting via Xencard!`);
       Linking.openURL(`https://wa.me/${clean}?text=${greeting}`);
     }
     setShowActionSheet(false);
@@ -146,7 +146,7 @@ export default function CardsScreen() {
         {item.thumbnailUri ? (
           <Image source={{ uri: item.thumbnailUri }} style={styles.thumbnail} />
         ) : (
-          <View style={[styles.thumbnailPlaceholder, { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' }]}>
+          <View style={[styles.thumbnailPlaceholder, { backgroundColor: isDark ? '#26181A' : '#FEE2E2' }]}>
             <Text style={[styles.avatarInitial, { color: colors.accent }]}>
               {(item.personName || 'U').charAt(0).toUpperCase()}
             </Text>
@@ -175,7 +175,7 @@ export default function CardsScreen() {
           <View style={styles.contactActions}>
             {item.phone ? (
               <TouchableOpacity
-                style={[styles.miniAction, { backgroundColor: 'rgba(0, 242, 254, 0.12)' }]}
+                style={[styles.miniAction, { backgroundColor: 'rgba(230, 51, 41, 0.14)' }]}
                 onPress={() => Linking.openURL(`tel:${item.phone}`)}
               >
                 <Ionicons name="call" size={14} color={colors.accent} />
@@ -197,10 +197,10 @@ export default function CardsScreen() {
 
             {item.email ? (
               <TouchableOpacity
-                style={[styles.miniAction, { backgroundColor: 'rgba(56, 189, 248, 0.12)' }]}
+                style={[styles.miniAction, { backgroundColor: 'rgba(245, 166, 35, 0.14)' }]}
                 onPress={() => Linking.openURL(`mailto:${item.email}`)}
               >
-                <Ionicons name="mail" size={14} color="#38BDF8" />
+                <Ionicons name="mail" size={14} color={colors.accentSecondary} />
               </TouchableOpacity>
             ) : null}
 
@@ -243,7 +243,7 @@ export default function CardsScreen() {
             <Ionicons
               name={sortAlphabetical ? 'text' : 'time-outline'}
               size={18}
-              color={sortAlphabetical ? '#0B0F17' : colors.accent}
+              color={sortAlphabetical ? '#FFFFFF' : colors.accent}
             />
           </TouchableOpacity>
 
@@ -251,7 +251,7 @@ export default function CardsScreen() {
             style={[styles.scanFab, { backgroundColor: colors.accent }]}
             onPress={() => router.push('/scan')}
           >
-            <Ionicons name="scan" size={20} color="#0B0F17" />
+            <Ionicons name="scan" size={20} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
       </View>
@@ -280,7 +280,7 @@ export default function CardsScreen() {
                 <Text
                   style={[
                     styles.filterChipText,
-                    { color: isActive ? '#0B0F17' : colors.textSecondary, fontWeight: isActive ? '700' : '500' },
+                    { color: isActive ? '#FFFFFF' : colors.textSecondary, fontWeight: isActive ? '700' : '500' },
                   ]}
                 >
                   {item}
@@ -313,7 +313,7 @@ export default function CardsScreen() {
               style={[styles.emptyButton, { backgroundColor: colors.accent }]}
               onPress={() => router.push('/scan')}
             >
-              <Ionicons name="scan" size={18} color="#0B0F17" />
+              <Ionicons name="scan" size={18} color="#FFFFFF" />
               <Text style={styles.emptyButtonText}>Scan First Card</Text>
             </TouchableOpacity>
           </View>
@@ -349,7 +349,7 @@ export default function CardsScreen() {
                 <View style={styles.actionGrid}>
                   {selectedContact.phone && (
                     <TouchableOpacity style={styles.actionBtn} onPress={handleCall}>
-                      <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(0, 242, 254, 0.15)' }]}>
+                      <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(230, 51, 41, 0.15)' }]}>
                         <Ionicons name="call" size={22} color={colors.accent} />
                       </View>
                       <Text style={[styles.actionBtnText, { color: colors.text }]}>Call</Text>
@@ -365,8 +365,8 @@ export default function CardsScreen() {
 
                   {selectedContact.email && (
                     <TouchableOpacity style={styles.actionBtn} onPress={handleEmail}>
-                      <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(56, 189, 248, 0.15)' }]}>
-                        <Ionicons name="mail" size={22} color="#38BDF8" />
+                      <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(245, 166, 35, 0.15)' }]}>
+                        <Ionicons name="mail" size={22} color={colors.accentSecondary} />
                       </View>
                       <Text style={[styles.actionBtnText, { color: colors.text }]}>Email</Text>
                     </TouchableOpacity>
@@ -374,23 +374,23 @@ export default function CardsScreen() {
 
                   {selectedContact.address && (
                     <TouchableOpacity style={styles.actionBtn} onPress={handleMaps}>
-                      <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(168, 85, 247, 0.15)' }]}>
-                        <Ionicons name="map" size={22} color="#A855F7" />
+                      <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(251, 146, 60, 0.15)' }]}>
+                        <Ionicons name="map" size={22} color="#FB923C" />
                       </View>
                       <Text style={[styles.actionBtnText, { color: colors.text }]}>Maps</Text>
                     </TouchableOpacity>
                   )}
 
                   <TouchableOpacity style={styles.actionBtn} onPress={handleShareVCard}>
-                    <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(245, 158, 11, 0.15)' }]}>
-                      <Ionicons name="share-social" size={22} color="#F59E0B" />
+                    <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(245, 166, 35, 0.15)' }]}>
+                      <Ionicons name="share-social" size={22} color="#F5A623" />
                     </View>
                     <Text style={[styles.actionBtnText, { color: colors.text }]}>Save/Share</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity style={styles.actionBtn} onPress={handleEdit}>
-                    <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(99, 102, 241, 0.15)' }]}>
-                      <Ionicons name="create" size={22} color="#6366F1" />
+                    <View style={[styles.actionIconWrap, { backgroundColor: 'rgba(230, 51, 41, 0.15)' }]}>
+                      <Ionicons name="create" size={22} color={colors.accent} />
                     </View>
                     <Text style={[styles.actionBtnText, { color: colors.text }]}>Edit</Text>
                   </TouchableOpacity>
@@ -569,7 +569,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   emptyButtonText: {
-    color: '#0B0F17',
+    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '700',
   },

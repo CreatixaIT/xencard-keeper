@@ -32,19 +32,19 @@ export default function SettingsScreen() {
 
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Display Theme</Text>
-        
+
         <GlassCard
           variant={mode === 'dark' ? 'glow' : 'subtle'}
           style={styles.option}
           onPress={() => handleThemeChange('dark')}
         >
           <View style={styles.optionContent}>
-            <View style={[styles.iconWrap, { backgroundColor: 'rgba(0, 242, 254, 0.12)' }]}>
+            <View style={[styles.iconWrap, { backgroundColor: 'rgba(230, 51, 41, 0.14)' }]}>
               <Ionicons name="moon" size={20} color={colors.accent} />
             </View>
             <View>
               <Text style={[styles.optionText, { color: colors.text }]}>Dark Glassmorphism</Text>
-              <Text style={[styles.optionSubtext, { color: colors.textSecondary }]}>Deep dark frosted glass with neon cyan glow</Text>
+              <Text style={[styles.optionSubtext, { color: colors.textSecondary }]}>Deep dark glass with Xentro crimson & gold glow</Text>
             </View>
           </View>
           {mode === 'dark' && <Ionicons name="checkmark-circle" size={22} color={colors.accent} />}
@@ -56,8 +56,8 @@ export default function SettingsScreen() {
           onPress={() => handleThemeChange('light')}
         >
           <View style={styles.optionContent}>
-            <View style={[styles.iconWrap, { backgroundColor: 'rgba(2, 132, 199, 0.12)' }]}>
-              <Ionicons name="sunny" size={20} color={colors.accent} />
+            <View style={[styles.iconWrap, { backgroundColor: 'rgba(245, 166, 35, 0.14)' }]}>
+              <Ionicons name="sunny" size={20} color={colors.accentSecondary} />
             </View>
             <View>
               <Text style={[styles.optionText, { color: colors.text }]}>Light Frosted</Text>
@@ -73,8 +73,8 @@ export default function SettingsScreen() {
           onPress={() => handleThemeChange('system')}
         >
           <View style={styles.optionContent}>
-            <View style={[styles.iconWrap, { backgroundColor: 'rgba(168, 85, 247, 0.12)' }]}>
-              <Ionicons name="phone-portrait" size={20} color="#A855F7" />
+            <View style={[styles.iconWrap, { backgroundColor: 'rgba(251, 146, 60, 0.14)' }]}>
+              <Ionicons name="phone-portrait" size={20} color="#FB923C" />
             </View>
             <View>
               <Text style={[styles.optionText, { color: colors.text }]}>System Default</Text>
@@ -90,7 +90,7 @@ export default function SettingsScreen() {
         <GlassCard variant="default" style={styles.infoBox}>
           <View style={styles.infoRow}>
             <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Application</Text>
-            <Text style={[styles.infoValue, { color: colors.text }]}>Xencard Keeper</Text>
+            <Text style={[styles.infoValue, { color: colors.text }]}>Xencard</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Engine</Text>
@@ -102,7 +102,7 @@ export default function SettingsScreen() {
           </View>
           <View style={styles.infoRow}>
             <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Build Version</Text>
-            <Text style={[styles.infoValue, { color: colors.textSecondary }]}>v1.0.0 (Release APK)</Text>
+            <Text style={[styles.infoValue, { color: colors.textSecondary }]}>v1.1.0 (Release)</Text>
           </View>
         </GlassCard>
       </View>

@@ -1,5 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
 import { getProfileByXencardId } from '../../db/repositories/userProfileRepository';
+import { generateUniqueXencardId } from '../../utils/xencardId';
 
 interface SyncQueueItem {
   id: string;
@@ -56,10 +57,8 @@ class SyncService {
     referralCode?: string;
   }): Promise<{ user: any; xencardId: string }> {
     try {
-      // Generate Xencard ID using the same method as userProfileRepository
-      const timestamp = Date.now().toString(36);
-      const random = Math.random().toString(36).substring(2, 8);
-      const xencardId = `XEN${timestamp}${random}`.toUpperCase();
+      // Generate unique 6-char Xencard ID from name + DOB
+      const xencardId = await generateUniqueXencardId(userData.fullName, userData.dateOfBirth);
 
       const user = {
         id: Date.now().toString(),

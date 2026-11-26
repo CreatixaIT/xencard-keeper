@@ -1,13 +1,8 @@
 import { eq } from 'drizzle-orm';
 import { db } from '../client';
 import { userProfile, referrals } from '../schema';
+import { generateUniqueXencardId } from '../../utils/xencardId';
 import type { UserProfile, Referral } from '../../types';
-
-function generateXencardId(): string {
-  const timestamp = Date.now().toString(36);
-  const random = Math.random().toString(36).substring(2, 8);
-  return `XEN${timestamp}${random}`.toUpperCase();
-}
 
 function generateReferralCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -22,7 +17,7 @@ export async function createUserProfile(
   profile: Omit<UserProfile, 'id' | 'xencardId' | 'referralCode' | 'cardLimit' | 'createdTimestamp' | 'updatedTimestamp'> & { xencardId?: string }
 ): Promise<UserProfile> {
   const id = Date.now().toString();
-  const xencardId = profile.xencardId || generateXencardId(); // Use provided ID or generate new one
+  const xencardId = profile.xencardId || await generateUniqueXencardId(profile.fullName, profile.dateOfBirth ?? '');
   const referralCode = generateReferralCode();
   const cardLimit = 100;
   const createdTimestamp = Date.now();

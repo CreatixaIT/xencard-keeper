@@ -43,8 +43,8 @@ export const ExecutiveVisitingCard: React.FC<ExecutiveVisitingCardProps> = ({
         style={[
           styles.cardContainer,
           {
-            borderColor: isDark ? 'rgba(0, 242, 254, 0.35)' : 'rgba(2, 132, 199, 0.35)',
-            backgroundColor: isDark ? '#101626' : '#FFFFFF',
+            borderColor: isDark ? 'rgba(245, 166, 35, 0.40)' : 'rgba(217, 43, 34, 0.35)',
+            backgroundColor: isDark ? '#181113' : '#FFFFFF',
             shadowColor: colors.glowCyan,
           },
         ]}
@@ -53,20 +53,20 @@ export const ExecutiveVisitingCard: React.FC<ExecutiveVisitingCardProps> = ({
         <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
           <Defs>
             <LinearGradient id="holoCard" x1="0%" y1="0%" x2="100%" y2="100%">
-              <Stop offset="0%" stopColor={isDark ? '#182238' : '#F0F9FF'} stopOpacity="0.9" />
-              <Stop offset="50%" stopColor={isDark ? '#0F172A' : '#E0F2FE'} stopOpacity="0.95" />
-              <Stop offset="100%" stopColor={isDark ? '#0A101D' : '#F8FAFC'} stopOpacity="1" />
+              <Stop offset="0%" stopColor={isDark ? '#2B1518' : '#FFF5F5'} stopOpacity="0.95" />
+              <Stop offset="50%" stopColor={isDark ? '#181012' : '#FEF2F2'} stopOpacity="0.96" />
+              <Stop offset="100%" stopColor={isDark ? '#0D0A0B' : '#FFFBEB'} stopOpacity="1" />
             </LinearGradient>
             <LinearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
-              <Stop offset="0%" stopColor="#00F2FE" />
-              <Stop offset="100%" stopColor="#4FACFE" />
+              <Stop offset="0%" stopColor="#E63329" />
+              <Stop offset="100%" stopColor="#F5A623" />
             </LinearGradient>
           </Defs>
           <Rect x="0" y="0" width="100%" height="100%" rx="24" fill="url(#holoCard)" />
           {/* Subtle decorative mesh arcs */}
-          <Path d="M 0,0 C 120,40 220,120 380,80" stroke="rgba(0, 242, 254, 0.12)" strokeWidth="2" fill="none" />
-          <Path d="M 0,60 C 140,100 240,180 400,140" stroke="rgba(79, 172, 254, 0.08)" strokeWidth="1.5" fill="none" />
-          <Circle cx="320" cy="40" r="80" fill="rgba(0, 242, 254, 0.03)" />
+          <Path d="M 0,0 C 120,40 220,120 380,80" stroke="rgba(230, 51, 41, 0.16)" strokeWidth="2" fill="none" />
+          <Path d="M 0,60 C 140,100 240,180 400,140" stroke="rgba(245, 166, 35, 0.14)" strokeWidth="1.5" fill="none" />
+          <Circle cx="320" cy="40" r="80" fill="rgba(245, 166, 35, 0.05)" />
         </Svg>
 
         {!isFlipped ? (
@@ -88,14 +88,14 @@ export const ExecutiveVisitingCard: React.FC<ExecutiveVisitingCardProps> = ({
                   <Circle cx="19" cy="14" r="4" fill="#D97706" opacity="0.6" />
                 </Svg>
                 <View style={styles.nfcIcon}>
-                  <Ionicons name="radio-outline" size={16} color={colors.accent} />
+                  <Ionicons name="radio-outline" size={16} color={colors.accentSecondary} />
                 </View>
               </View>
 
               <View style={styles.topRightBadge}>
-                <View style={[styles.verifiedPill, { backgroundColor: 'rgba(0, 242, 254, 0.15)', borderColor: colors.accent }]}>
-                  <Ionicons name="shield-checkmark" size={12} color={colors.accent} />
-                  <Text style={[styles.verifiedText, { color: colors.accent }]}>EXECUTIVE</Text>
+                <View style={[styles.verifiedPill, { backgroundColor: 'rgba(245, 166, 35, 0.14)', borderColor: colors.accentSecondary }]}>
+                  <Ionicons name="shield-checkmark" size={12} color={colors.accentSecondary} />
+                  <Text style={[styles.verifiedText, { color: colors.accentSecondary }]}>EXECUTIVE</Text>
                 </View>
               </View>
             </View>
@@ -159,7 +159,7 @@ export const ExecutiveVisitingCard: React.FC<ExecutiveVisitingCardProps> = ({
                 <QRCode
                   value={qrData}
                   size={100}
-                  color="#0F172A"
+                  color="#1A0E0E"
                   backgroundColor="#FFFFFF"
                 />
               </View>
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
-    backgroundColor: 'rgba(0, 242, 254, 0.1)',
+    backgroundColor: 'rgba(230, 51, 41, 0.12)',
   },
   flipHintText: {
     fontSize: 11,

@@ -46,10 +46,10 @@ export default function ScanScreen() {
           <Ionicons name="camera-outline" size={64} color={colors.accent} />
           <Text style={[styles.permissionTitle, { color: colors.text }]}>Camera Access Required</Text>
           <Text style={[styles.permissionText, { color: colors.textSecondary }]}>
-            Xencard Keeper needs access to your camera to scan business cards.
+            Xencard needs access to your camera to scan business cards.
           </Text>
           <TouchableOpacity style={[styles.permissionButton, { backgroundColor: colors.accent }]} onPress={requestPermission}>
-            <Text style={styles.permissionButtonText}>Grant Permission</Text>
+            <Text style={[styles.permissionButtonText, { color: '#FFFFFF' }]}>Grant Permission</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -225,8 +225,8 @@ export default function ScanScreen() {
             <Text style={[styles.secondaryButtonText, { color: colors.accent }]}>Retake</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.primaryButton, { backgroundColor: colors.accent }]} onPress={handleProceed}>
-            <Text style={styles.primaryButtonText}>Continue to Edit</Text>
-            <Ionicons name="arrow-forward" size={20} color="#0B0F17" />
+            <Text style={[styles.primaryButtonText, { color: '#FFFFFF' }]}>Continue to Edit</Text>
+            <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
       </View>

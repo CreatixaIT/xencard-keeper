@@ -113,7 +113,7 @@ export default function PersonalCardsScreen() {
           onPress={handleAddCard}
           style={[styles.headerBtn, { backgroundColor: colors.accent, borderColor: colors.accent }]}
         >
-          <Ionicons name="add" size={22} color="#0B0F17" />
+          <Ionicons name="add" size={22} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
 
@@ -135,7 +135,7 @@ export default function PersonalCardsScreen() {
               style={[styles.createFirstButton, { backgroundColor: colors.accent }]} 
               onPress={handleAddCard}
             >
-              <Ionicons name="add-circle-outline" size={20} color="#0B0F17" />
+              <Ionicons name="add-circle-outline" size={20} color="#FFFFFF" />
               <Text style={styles.createFirstButtonText}>Create Your First Card</Text>
             </TouchableOpacity>
           </View>
@@ -240,7 +240,7 @@ export default function PersonalCardsScreen() {
                   <QRCode
                     value={qrService.generateProfileQRCodeData(selectedCard.id)}
                     size={200}
-                    color="#0B0F17"
+                    color="#1A0E0E"
                     backgroundColor="#FFFFFF"
                   />
                 </View>
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
   setActiveBtnText: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#0B0F17',
+    color: '#FFFFFF',
   },
   controlActionsRow: {
     flexDirection: 'row',
@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   createFirstButtonText: {
-    color: '#0B0F17',
+    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '800',
   },

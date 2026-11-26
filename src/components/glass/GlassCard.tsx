@@ -34,8 +34,8 @@ export const GlassCard: React.FC<GlassCardProps> = ({
         };
       case 'accent':
         return {
-          backgroundColor: isDark ? 'rgba(0, 242, 254, 0.08)' : 'rgba(2, 132, 199, 0.08)',
-          borderColor: isDark ? 'rgba(0, 242, 254, 0.35)' : 'rgba(2, 132, 199, 0.35)',
+          backgroundColor: isDark ? 'rgba(230, 51, 41, 0.10)' : 'rgba(217, 43, 34, 0.08)',
+          borderColor: isDark ? 'rgba(245, 166, 35, 0.40)' : 'rgba(217, 43, 34, 0.35)',
           borderWidth: 1,
         };
       case 'subtle':

@@ -77,7 +77,7 @@ export default function RegisterScreen() {
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color="#00F2FE" />
+          <Ionicons name="arrow-back" size={24} color="#E63329" />
         </TouchableOpacity>
 
         <Text style={styles.title}>New Registration</Text>
@@ -129,7 +129,7 @@ export default function RegisterScreen() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#0B0F17" />
+              <ActivityIndicator color="#FFFFFF" />
             ) : (
               <Text style={styles.buttonText}>Create Account</Text>
             )}
@@ -145,7 +145,7 @@ export default function RegisterScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Ionicons name="shield-checkmark" size={60} color="#00F2FE" style={styles.modalIcon} />
+            <Ionicons name="shield-checkmark" size={60} color="#F5A623" style={styles.modalIcon} />
             <Text style={styles.modalTitle}>Your Xencard ID</Text>
             <View style={styles.idContainer}>
               <Text style={styles.xencardId}>{generatedXencardId}</Text>
@@ -156,12 +156,12 @@ export default function RegisterScreen() {
 
             <View style={styles.modalButtons}>
               <TouchableOpacity style={styles.modalButton} onPress={handleCopyId}>
-                <Ionicons name="copy" size={20} color="#00F2FE" />
+                <Ionicons name="copy" size={20} color="#F5A623" />
                 <Text style={styles.modalButtonText}>Copy ID</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.modalButton} onPress={handleShareId}>
-                <Ionicons name="share-social" size={20} color="#00F2FE" />
+                <Ionicons name="share-social" size={20} color="#F5A623" />
                 <Text style={styles.modalButtonText}>Share ID</Text>
               </TouchableOpacity>
             </View>
@@ -179,7 +179,7 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B0F17',
+    backgroundColor: '#0D0A0B',
   },
   content: {
     flex: 1,
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#8E8E93',
+    color: '#B8A8AA',
     marginBottom: 32,
   },
   form: {
@@ -210,16 +210,16 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#1A1F2E',
+    backgroundColor: '#161012',
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
     color: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#2A2F3E',
+    borderColor: '#2E1E21',
   },
   button: {
-    backgroundColor: '#00F2FE',
+    backgroundColor: '#E63329',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#8E8E93',
   },
   buttonText: {
-    color: '#0B0F17',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -241,13 +241,13 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modalContent: {
-    backgroundColor: '#1A1F2E',
+    backgroundColor: '#181214',
     borderRadius: 20,
     padding: 32,
     width: '100%',
     maxWidth: 400,
     borderWidth: 1,
-    borderColor: '#00F2FE',
+    borderColor: '#E63329',
   },
   modalIcon: {
     alignSelf: 'center',
@@ -261,23 +261,23 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   idContainer: {
-    backgroundColor: '#0B0F17',
+    backgroundColor: '#0D0A0B',
     borderRadius: 12,
     padding: 20,
     marginBottom: 16,
     borderWidth: 2,
-    borderColor: '#00F2FE',
+    borderColor: '#F5A623',
   },
   xencardId: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#00F2FE',
+    color: '#F5A623',
     textAlign: 'center',
-    letterSpacing: 2,
+    letterSpacing: 4,
   },
   modalWarning: {
     fontSize: 14,
-    color: '#FF6B6B',
+    color: '#FCA5A5',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
-    backgroundColor: '#0B0F17',
+    backgroundColor: '#0D0A0B',
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
@@ -296,21 +296,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     borderWidth: 1,
-    borderColor: '#2A2F3E',
+    borderColor: '#2E1E21',
   },
   modalButtonText: {
-    color: '#00F2FE',
+    color: '#F5A623',
     fontSize: 14,
     fontWeight: '600',
   },
   continueButton: {
-    backgroundColor: '#00F2FE',
+    backgroundColor: '#E63329',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
   },
   continueButtonText: {
-    color: '#0B0F17',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
   },

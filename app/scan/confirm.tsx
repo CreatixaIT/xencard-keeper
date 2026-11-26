@@ -147,7 +147,7 @@ export default function ScanConfirmScreen() {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator size="small" color="#0B0F17" />
+            <ActivityIndicator size="small" color="#FFFFFF" />
           ) : (
             <Text style={styles.saveHeaderBtnText}>Save</Text>
           )}
@@ -223,7 +223,7 @@ export default function ScanConfirmScreen() {
                   ]}
                   onPress={() => updateField('industry', ind)}
                 >
-                  <Text style={[styles.industryChipText, { color: active ? '#0B0F17' : colors.textSecondary, fontWeight: active ? '700' : '500' }]}>
+                  <Text style={[styles.industryChipText, { color: active ? '#FFFFFF' : colors.textSecondary, fontWeight: active ? '700' : '500' }]}>
                     {ind}
                   </Text>
                 </TouchableOpacity>
@@ -358,7 +358,7 @@ export default function ScanConfirmScreen() {
         disabled={loading}
       >
         {loading ? (
-          <ActivityIndicator color="#0B0F17" />
+          <ActivityIndicator color="#FFFFFF" />
         ) : (
           <Text style={styles.saveButtonText}>Save Card to Vault</Text>
         )}
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   saveHeaderBtnText: {
-    color: '#0B0F17',
+    color: '#FFFFFF',
     fontSize: 13,
     fontWeight: '800',
   },
@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 120,
     borderRadius: 14,
-    backgroundColor: '#0F172A',
+    backgroundColor: '#161012',
   },
   formSection: {
     padding: 16,
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   saveButtonText: {
-    color: '#0B0F17',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '800',
   },

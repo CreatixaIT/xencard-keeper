@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Modal, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import Svg, { Path, Defs, LinearGradient, Stop, Rect, Text as SvgText } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   getContactCount,
@@ -20,67 +19,7 @@ import { useTheme } from '../../src/contexts/ThemeContext';
 import { GlassCard } from '../../src/components/glass/GlassCard';
 import { GlassKPI } from '../../src/components/glass/GlassKPI';
 import { ExecutiveVisitingCard } from '../../src/components/glass/ExecutiveVisitingCard';
-
-const XencardLogo = () => (
-  <Svg width={140} height={42} viewBox="0 0 600 200">
-    <Defs>
-      <LinearGradient id="cyanBlue" x1="0%" y1="0%" x2="100%" y2="100%">
-        <Stop offset="0%" stopColor="#00F2FE" />
-        <Stop offset="100%" stopColor="#4FACFE" />
-      </LinearGradient>
-      <LinearGradient id="darkShield" x1="0%" y1="0%" x2="100%" y2="100%">
-        <Stop offset="0%" stopColor="#1E293B" />
-        <Stop offset="100%" stopColor="#0F172A" />
-      </LinearGradient>
-    </Defs>
-    {/* Shield */}
-    <Path
-      d="M 75,15 L 125,40 V 100 C 125,130 75,155 75,155 C 75,155 25,130 25,100 V 40 Z"
-      fill="url(#darkShield)"
-      stroke="#1E293B"
-      strokeWidth="3"
-    />
-    <Rect
-      x="42"
-      y="55"
-      width="60"
-      height="40"
-      rx="6"
-      fill="#1E293B"
-      stroke="#00F2FE"
-      strokeWidth="1.5"
-      strokeOpacity="0.5"
-      transform="rotate(-12 72 75)"
-    />
-    <Rect
-      x="48"
-      y="55"
-      width="60"
-      height="40"
-      rx="6"
-      fill="url(#cyanBlue)"
-      opacity="0.9"
-      transform="rotate(8 78 75)"
-    />
-    <Path
-      d="M 63,65 L 87,85 M 87,65 L 63,85"
-      stroke="#0B0F17"
-      strokeWidth="4.5"
-      strokeLinecap="round"
-      transform="rotate(8 78 75)"
-    />
-    {/* Wordmark */}
-    <SvgText x="180" y="112" fontSize="38" fontWeight="800" fill="#FFFFFF" letterSpacing="1">
-      XEN
-    </SvgText>
-    <SvgText x="268" y="112" fontSize="38" fontWeight="800" fill="#00F2FE" letterSpacing="1">
-      CARD
-    </SvgText>
-    <SvgText x="182" y="140" fontSize="16" fontWeight="500" fill="#94A3B8" letterSpacing="7">
-      KEEPER
-    </SvgText>
-  </Svg>
-);
+import { XencardLogo } from '../../src/components/XencardLogo';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -142,7 +81,7 @@ export default function HomeScreen() {
     if (phone) {
       const clean = phone.replace(/[^0-9]/g, '');
       const greeting = encodeURIComponent(
-        `Hello ${name || ''}, nice connecting with you via Xencard Keeper!`
+        `Hello ${name || ''}, nice connecting with you via Xencard!`
       );
       Linking.openURL(`https://wa.me/${clean}?text=${greeting}`);
     }
@@ -176,7 +115,7 @@ export default function HomeScreen() {
         {/* Top Header */}
         <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
           <View style={styles.headerLeft}>
-            <XencardLogo />
+            <XencardLogo size="navbar" />
             {xencardId && (
               <TouchableOpacity
                 onPress={() => setShowXencardIdModal(true)}
@@ -188,9 +127,9 @@ export default function HomeScreen() {
                   },
                 ]}
               >
-                <Ionicons name="finger-print" size={13} color={colors.accent} />
-                <Text style={[styles.xencardIdText, { color: colors.accent }]}>
-                  {xencardId.slice(0, 8)}...
+                <Ionicons name="finger-print" size={13} color={colors.accentSecondary} />
+                <Text style={[styles.xencardIdText, { color: colors.accentSecondary }]}>
+                  {xencardId}
                 </Text>
               </TouchableOpacity>
             )}
@@ -255,14 +194,14 @@ export default function HomeScreen() {
             title="Companies"
             value={companyCount}
             subtitle="Networked"
-            color="#38BDF8"
+            color={colors.accentSecondary}
           />
           <GlassKPI
             icon="pie-chart"
             title="Industries"
             value={industryCount}
             subtitle="Sectors"
-            color="#A855F7"
+            color="#FB923C"
           />
         </View>
 
@@ -272,6 +211,7 @@ export default function HomeScreen() {
           style={[
             styles.scanHeroButton,
             {
+              backgroundColor: colors.accent,
               shadowColor: colors.glowCyan,
             },
           ]}
@@ -280,7 +220,7 @@ export default function HomeScreen() {
           <View style={styles.scanGlowLayer} />
           <View style={styles.scanContentRow}>
             <View style={styles.scanCameraCircle}>
-              <Ionicons name="scan" size={26} color="#0B0F17" />
+              <Ionicons name="scan" size={26} color={colors.accent} />
             </View>
             <View style={styles.scanTextWrapper}>
               <View style={styles.scanBadgeRow}>
@@ -293,7 +233,7 @@ export default function HomeScreen() {
                 Extract Name, Company, Phone, WhatsApp & Address
               </Text>
             </View>
-            <Ionicons name="arrow-forward" size={22} color="#0B0F17" />
+            <Ionicons name="arrow-forward" size={22} color="#FFFFFF" />
           </View>
         </TouchableOpacity>
 
@@ -307,7 +247,7 @@ export default function HomeScreen() {
             <View
               style={[
                 styles.quickActionIconWrap,
-                { backgroundColor: 'rgba(0, 242, 254, 0.12)' },
+                { backgroundColor: 'rgba(230, 51, 41, 0.14)' },
               ]}
             >
               <Ionicons name="wallet-outline" size={20} color={colors.accent} />
@@ -323,10 +263,10 @@ export default function HomeScreen() {
             <View
               style={[
                 styles.quickActionIconWrap,
-                { backgroundColor: 'rgba(56, 189, 248, 0.12)' },
+                { backgroundColor: 'rgba(245, 166, 35, 0.14)' },
               ]}
             >
-              <Ionicons name="sparkles" size={20} color="#38BDF8" />
+              <Ionicons name="sparkles" size={20} color={colors.accentSecondary} />
             </View>
             <Text style={[styles.quickActionLabel, { color: colors.text }]}>Xeni AI</Text>
           </GlassCard>
@@ -339,10 +279,10 @@ export default function HomeScreen() {
             <View
               style={[
                 styles.quickActionIconWrap,
-                { backgroundColor: 'rgba(168, 85, 247, 0.12)' },
+                { backgroundColor: 'rgba(251, 146, 60, 0.14)' },
               ]}
             >
-              <Ionicons name="person-add-outline" size={20} color="#A855F7" />
+              <Ionicons name="person-add-outline" size={20} color="#FB923C" />
             </View>
             <Text style={[styles.quickActionLabel, { color: colors.text }]}>Manual Add</Text>
           </GlassCard>
@@ -355,7 +295,7 @@ export default function HomeScreen() {
             <View
               style={[
                 styles.quickActionIconWrap,
-                { backgroundColor: 'rgba(16, 185, 129, 0.12)' },
+                { backgroundColor: 'rgba(16, 185, 129, 0.14)' },
               ]}
             >
               <Ionicons name="qr-code-outline" size={20} color="#10B981" />
@@ -384,7 +324,7 @@ export default function HomeScreen() {
             )}
           </View>
 
-          <View style={[styles.storageBarTrack, { backgroundColor: isDark ? '#1C2436' : '#E2E8F0' }]}>
+          <View style={[styles.storageBarTrack, { backgroundColor: isDark ? '#28191B' : '#FCE4E1' }]}>
             <View
               style={[
                 styles.storageBarFill,
@@ -428,7 +368,7 @@ export default function HomeScreen() {
                 {contact.thumbnailUri ? (
                   <Image source={{ uri: contact.thumbnailUri }} style={styles.contactThumbnail} />
                 ) : (
-                  <View style={[styles.contactAvatarFallback, { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' }]}>
+                  <View style={[styles.contactAvatarFallback, { backgroundColor: isDark ? '#26181A' : '#FEE2E2' }]}>
                     <Text style={[styles.avatarText, { color: colors.accent }]}>
                       {(contact.personName || 'U').charAt(0).toUpperCase()}
                     </Text>
@@ -456,7 +396,7 @@ export default function HomeScreen() {
                 <View style={styles.contactQuickActions}>
                   {contact.phone ? (
                     <TouchableOpacity
-                      style={[styles.miniActionBtn, { backgroundColor: 'rgba(0, 242, 254, 0.12)' }]}
+                      style={[styles.miniActionBtn, { backgroundColor: 'rgba(230, 51, 41, 0.14)' }]}
                       onPress={() => handleCall(contact.phone)}
                     >
                       <Ionicons name="call" size={16} color={colors.accent} />
@@ -500,7 +440,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
 
             <View style={styles.modalHeader}>
-              <View style={[styles.modalIconWrap, { backgroundColor: 'rgba(0, 242, 254, 0.15)' }]}>
+              <View style={[styles.modalIconWrap, { backgroundColor: 'rgba(230, 51, 41, 0.15)' }]}>
                 <Ionicons name="finger-print" size={32} color={colors.accent} />
               </View>
               <Text style={[styles.modalTitle, { color: colors.text }]}>Your Xencard Vault ID</Text>
@@ -510,7 +450,7 @@ export default function HomeScreen() {
             </View>
 
             <View style={[styles.modalXencardIdContainer, { backgroundColor: colors.background, borderColor: colors.glassBorderGlow }]}>
-              <Text style={[styles.xencardIdDisplay, { color: colors.accent }]}>{xencardId}</Text>
+              <Text style={[styles.xencardIdDisplay, { color: colors.accentSecondary }]}>{xencardId}</Text>
             </View>
 
             <View style={styles.modalButtons}>
@@ -518,16 +458,16 @@ export default function HomeScreen() {
                 style={[styles.modalButton, { backgroundColor: colors.surfaceElevated, borderColor: colors.glassBorder }]}
                 onPress={handleCopyXencardId}
               >
-                <Ionicons name="copy-outline" size={18} color={colors.accent} />
+                <Ionicons name="copy-outline" size={18} color={colors.accentSecondary} />
                 <Text style={[styles.modalButtonText, { color: colors.text }]}>Copy ID</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: colors.accent }]}
+                style={[styles.modalButton, { backgroundColor: colors.accent, borderColor: colors.accent }]}
                 onPress={handleShareXencardId}
               >
-                <Ionicons name="share-social-outline" size={18} color="#0B0F17" />
-                <Text style={[styles.modalButtonText, { color: '#0B0F17', fontWeight: '700' }]}>
+                <Ionicons name="share-social-outline" size={18} color="#FFFFFF" />
+                <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontWeight: '700' }]}>
                   Share Profile
                 </Text>
               </TouchableOpacity>
@@ -547,14 +487,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingBottom: 12,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
     flex: 1,
+    flexWrap: 'wrap',
   },
   headerRight: {
     flexDirection: 'row',
@@ -595,7 +536,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 16,
-    backgroundColor: 'rgba(0, 242, 254, 0.12)',
+    backgroundColor: 'rgba(230, 51, 41, 0.14)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -620,7 +561,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 14,
     borderRadius: 22,
-    backgroundColor: '#00F2FE',
+    backgroundColor: '#E63329',
     padding: 16,
     overflow: 'hidden',
     shadowOffset: { width: 0, height: 6 },
@@ -630,7 +571,7 @@ const styles = StyleSheet.create({
   },
   scanGlowLayer: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(245, 166, 35, 0.08)',
   },
   scanContentRow: {
     flexDirection: 'row',
@@ -641,7 +582,7 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    backgroundColor: 'rgba(255, 255, 255, 0.94)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -656,10 +597,10 @@ const styles = StyleSheet.create({
   scanHeroTitle: {
     fontSize: 17,
     fontWeight: '800',
-    color: '#0B0F17',
+    color: '#FFFFFF',
   },
   scanAiBadge: {
-    backgroundColor: 'rgba(11, 15, 23, 0.15)',
+    backgroundColor: '#F5A623',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
@@ -667,12 +608,12 @@ const styles = StyleSheet.create({
   scanAiBadgeText: {
     fontSize: 9,
     fontWeight: '800',
-    color: '#0B0F17',
+    color: '#1A0E0E',
     letterSpacing: 0.5,
   },
   scanHeroSubtitle: {
     fontSize: 12,
-    color: '#0F172A',
+    color: 'rgba(255, 255, 255, 0.88)',
     fontWeight: '500',
     marginTop: 2,
   },
